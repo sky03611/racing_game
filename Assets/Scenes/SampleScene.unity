@@ -575,14 +575,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slipForceCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: -0.0020203239
+      value: -0.0000003598771
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.99595684
+      value: 0.99999976
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.4898013
+      value: 0.7885086
+      inSlope: -0.014500319
+      outSlope: -0.014500319
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 2.6062992
+      value: 0.782671
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   wheelFL: 0
   wheelFR: 0
-  wheelMesh: {fileID: 1648069297}
-  springRestLength: 0.56
+  wheelRL: 0
+  wheelRR: 1
+  wheelMesh: {fileID: 1340761555}
+  springRestLength: 0.5
   springStiffness: 30000
   damper: 5000
   springTravel: 0.1
@@ -590,7 +628,7 @@ MonoBehaviour:
   wheelMass: 11.48
   longStiffness: 1
   steerAngle: 0
-  cornerStiffness: 2.36
+  cornerStiffness: 0.58
   isDriven: 0
 --- !u!1 &65022194
 GameObject:
@@ -1985,7 +2023,7 @@ Transform:
   m_Children:
   - {fileID: 360593500}
   m_Father: {fileID: 2012997493}
-  m_RootOrder: 4
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &217392283
 MeshCollider:
@@ -3019,7 +3057,7 @@ Transform:
   m_Children:
   - {fileID: 2047048496}
   m_Father: {fileID: 2012997493}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &418465370
 MeshCollider:
@@ -3399,7 +3437,7 @@ Transform:
   m_Children:
   - {fileID: 1373973246}
   m_Father: {fileID: 2012997493}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &426246967
 MeshCollider:
@@ -3714,7 +3752,7 @@ Transform:
   m_Children:
   - {fileID: 1545168794}
   m_Father: {fileID: 2012997493}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &481366193
 MeshCollider:
@@ -6653,14 +6691,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slipForceCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: -0.0020203239
+      value: -0.0000003598771
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.99595684
+      value: 0.99999976
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.4898013
+      value: 0.7885086
+      inSlope: -0.014500319
+      outSlope: -0.014500319
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 2.6062992
+      value: 0.782671
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   wheelFL: 0
   wheelFR: 0
-  wheelMesh: {fileID: 427699803}
-  springRestLength: 0.56
+  wheelRL: 1
+  wheelRR: 0
+  wheelMesh: {fileID: 1340761555}
+  springRestLength: 0.5
   springStiffness: 30000
   damper: 5000
   springTravel: 0.1
@@ -6668,7 +6744,7 @@ MonoBehaviour:
   wheelMass: 11.48
   longStiffness: 1
   steerAngle: 0
-  cornerStiffness: 2.36
+  cornerStiffness: 0.58
   isDriven: 0
 --- !u!1 &1112082948
 GameObject:
@@ -8193,11 +8269,31 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.5009445
+      value: 0.79451764
+      inSlope: -0.018525677
+      outSlope: -0.018525677
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 2.8080254
+      value: 0.7861252
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   wheelFL: 1
   wheelFR: 0
+  wheelRL: 0
+  wheelRR: 0
   wheelMesh: {fileID: 334078003}
   springRestLength: 0.5
   springStiffness: 30000
@@ -8207,7 +8303,7 @@ MonoBehaviour:
   wheelMass: 11.48
   longStiffness: 1
   steerAngle: 0
-  cornerStiffness: 2.36
+  cornerStiffness: 0.58
   isDriven: 0
 --- !u!1 &1340761555
 GameObject:
@@ -9024,7 +9120,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1.4898013
+      time: 1.4924258
       value: 0.7885086
       inSlope: -0.014500319
       outSlope: -0.014500319
@@ -9046,6 +9142,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   wheelFL: 0
   wheelFR: 1
+  wheelRL: 0
+  wheelRR: 0
   wheelMesh: {fileID: 1340761555}
   springRestLength: 0.5
   springStiffness: 30000
@@ -9055,7 +9153,7 @@ MonoBehaviour:
   wheelMass: 11.48
   longStiffness: 1
   steerAngle: 0
-  cornerStiffness: 2.36
+  cornerStiffness: 0.58
   isDriven: 0
 --- !u!1 &1526049056
 GameObject:
@@ -11903,11 +12001,11 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 217392282}
   - {fileID: 481366192}
   - {fileID: 418465369}
   - {fileID: 2128852635}
   - {fileID: 426246966}
-  - {fileID: 217392282}
   - {fileID: 1897881378}
   - {fileID: 1703255335}
   - {fileID: 1962343396}
@@ -12062,7 +12160,7 @@ Transform:
   m_Children:
   - {fileID: 1711071724}
   m_Father: {fileID: 2012997493}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &2128852636
 MeshCollider:
@@ -12386,8 +12484,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 8980.011
-      value: 38.89333
+      time: 8154.2236
+      value: 149.28056
       inSlope: 0
       outSlope: 0
       tangentMode: 136
