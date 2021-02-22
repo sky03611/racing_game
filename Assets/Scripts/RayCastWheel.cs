@@ -38,13 +38,14 @@ public class RayCastWheel : MonoBehaviour
     private Vector3 finalForce;
     private float forceY;
     private float forceX;
+    private float forceZ;
     private float wheelForwardVelocity;
     private float maxWheelSpeed;
     private float longSlipVelocity;
     private float lateralSlipNormalized;
     private float longSlipNormalized;
     private float lateralLongSlipNormalized;
-    private Vector3 aboba;
+    private Vector2 longLateralVector;
     public float longStiffness = 1f;
 
     public float steerAngle;
@@ -55,7 +56,7 @@ public class RayCastWheel : MonoBehaviour
     public bool isDriven;
 
     private float aboba3;
-    private float aboba2;
+    private float wheelAngularVelocityTest;
     // Start is called before the first frame update
     void Start()
     {
@@ -79,19 +80,36 @@ public class RayCastWheel : MonoBehaviour
         GetWheelSlipCombined();
         TireFriction();
         WheelAngularVelocity();
+        WheelRolling();
     }
 
     private void WheelAngularVelocity()
     {
         wheelInertia = Mathf.Pow(wheelRadius, 2) * wheelMass * 0.5f; //todo
-        var angAcc = ce.GetEngineTransTorque() / wheelInertia;
-        wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (ce.GetEngineTorque() / wheelInertia) * Time.fixedDeltaTime), Mathf.Abs(maxWheelSpeed));
+        if (isDriven)
+        {
+            // wheelAngularVelocityTest += Time.fixedDeltaTime * ct.GetTrasmissionTorque() / wheelInertia;
+            // wheelAngularVelocity = Mathf.Min(maxWheelSpeed, wheelAngularVelocityTest);
+            wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (ct.GetTrasmissionTorque() / wheelInertia) * Time.fixedDeltaTime), Mathf.Abs(maxWheelSpeed));
+
+        }
+        else
+        {
+            wheelAngularVelocity = 0f;
+        }
+        
+        
+       //wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (ce.GetEngineTorque() / wheelInertia) * Time.fixedDeltaTime), Mathf.Abs(maxWheelSpeed));
         //max wheel speed on current gear
         if (ct.TotalGearRatio() != 0)
-        {
-            totalGearRatio = ct.TotalGearRatio();
-            maxWheelSpeed = ce.EngineAngularVelocity() / ct.TotalGearRatio(); ;
+        { 
+           maxWheelSpeed = ce.EngineAngularVelocity() / ct.TotalGearRatio();    
         }
+        else
+        {
+            maxWheelSpeed = 0;
+        }
+      //  Debug.Log(wheelAngularVelocity);
     }
 
     private void ApplySuspinsionForces()
@@ -100,16 +118,21 @@ public class RayCastWheel : MonoBehaviour
         springLastLength = springLength;
         if (Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, rayLength))
         {
-            wheelVelocityLS = this.transform.InverseTransformDirection(rb.GetPointVelocity(hit.point));
-            //wheelVelocityLS = transform.InverseTransformDirection(rb.GetPointVelocity(hit.point));
+            //wheelVelocityLS = this.transform.InverseTransformDirection(rb.GetPointVelocity(hit.point));
+            Vector3 velocityAtTouch = rb.GetPointVelocity(hit.point);
+            wheelVelocityLS =transform.InverseTransformDirection(velocityAtTouch);
+            
             wheelForwardVelocity = transform.InverseTransformDirection(rb.GetPointVelocity(hit.point)).z;
             springLength = hit.distance - wheelRadius;
             springVelocity = (springLastLength - springLength) / Time.fixedDeltaTime;
             damperForce = damper * springVelocity;
             Mathf.Clamp(springLength, rayMinLenth, rayLength);
             springForce = (springStiffness * (springRestLength - springLength)) + damperForce;
+            forceZ = springForce;
+
             // wheelMesh.transform.localPosition = new Vector3(wheelMesh.transform.localPosition.x, wheelRadius - hit.distance, wheelMesh.transform.localPosition.z);
-            finalForce = ((springForce * transform.up) + (forceY * transform.right) + (forceX * transform.forward));
+           finalForce = ((springForce * transform.up) + (forceY * transform.right) + (forceX * transform.forward));
+           // finalForce = new Vector3(forceY, springForce, forceX);
             rb.AddForceAtPosition(finalForce, hit.point);
             Debug.DrawRay(transform.position, (-transform.up * rayLength));
         }
@@ -117,7 +140,7 @@ public class RayCastWheel : MonoBehaviour
 
     private void WheelRolling()
     {
-        var angularVelocity = (wheelAngularVelocity * Mathf.Rad2Deg) * Time.deltaTime;
+        var angularVelocity = (wheelAngularVelocity * Mathf.Rad2Deg) * Time.fixedDeltaTime;
         if (totalGearRatio == 1)
         {
             wheelMesh.transform.Rotate(0, 0, 0, Space.Self);
@@ -140,25 +163,25 @@ public class RayCastWheel : MonoBehaviour
     private void GetWheelSlipCombined()
     {
        lateralSlipNormalized = Mathf.Clamp(wheelVelocityLS.y * cornerStiffness*-1, -1, 1);
-       longSlipVelocity = (wheelAngularVelocity * Mathf.Rad2Deg) * Time.deltaTime * wheelRadius - wheelVelocityLS.x; 
+       longSlipVelocity = wheelAngularVelocity * wheelRadius - wheelVelocityLS.x; 
 
        if(wheelVelocityLS.x * longSlipVelocity > 0)
         {
-            longSlipNormalized = Mathf.Clamp((ce.GetEngineTransTorque() / wheelRadius) / Mathf.Max(0.0f, springForce ),-2,2);
-            Debug.Log("traction");
+            longSlipNormalized = Mathf.Clamp((ct.GetTrasmissionTorque() / wheelRadius) / Mathf.Max(0.0f, forceZ),-2,2);
+            
         }
         else
         {
-            Debug.Log("Friction");
-            longSlipNormalized = Mathf.Clamp(longSlipVelocity * 5, -2, 2);
+           
+            longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -2, 2);
         }
-        aboba.x = longSlipNormalized;
-        aboba.z = lateralSlipNormalized;
-        var combinedSlip = aboba.magnitude;
-        Vector3 tireForceNormalized = slipForceCurve.Evaluate(combinedSlip) * aboba.normalized * Mathf.Max(0.0f, springForce);
-        Debug.Log(tireForceNormalized);
+        longLateralVector.x = longSlipNormalized;
+        longLateralVector.y = lateralSlipNormalized;
+        var combinedSlip = longLateralVector.magnitude;
+        Vector2 tireForceNormalized = slipForceCurve.Evaluate(combinedSlip) * longLateralVector.normalized * Mathf.Max(0.0f, forceZ);
+        
         forceX = tireForceNormalized.x;
-        forceY = tireForceNormalized.z;
+        forceY = tireForceNormalized.y;
         
        // if (wheelFL)
        // {

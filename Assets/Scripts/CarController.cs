@@ -31,7 +31,7 @@ public class CarController : MonoBehaviour
     {
 
         rearTrack = rearTrack / 2;
-        WheelDriveType();
+       // WheelDriveType();
         CenterOfMassCorrector();
 
     }

@@ -16,7 +16,7 @@ public class CarEngine : MonoBehaviour
     private float engineAngularVelocity;
     private float rpmToRadsSec;
     private float radsSecToRpm;
-    private float transmissionEngineTorque;
+    
     
 
     //DashBoard
@@ -43,18 +43,14 @@ public class CarEngine : MonoBehaviour
         engineRpm = engineAngularVelocity * radsSecToRpm;
         dashBoard.SetEngineRpm(engineRpm); // Send Rpm to dashboard
         ca.SetEngingeRpm(engineRpm); // send Rpm to audio script
-        transmissionEngineTorque = ct.TotalGearRatio() * torquePower;
-
+        //transmissionEngineTorque = ct.TotalGearRatio() * torquePower;
+        //Debug.Log("transmissionEngineTorque " + ct.TotalGearRatio());
     }
 
-    public float GetEngineTransTorque()
-    {
-        return transmissionEngineTorque;
-    }
 
     public float GetEngineTorque()
     {
-        return transmissionEngineTorque;
+        return torquePower;
     }
 
     public float GetEngineRPM()
@@ -66,6 +62,8 @@ public class CarEngine : MonoBehaviour
     {
         return engineAngularVelocity;
     }
+
+    
 
 
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CarTransmission : MonoBehaviour
 {
+    private CarEngine ce;
     public float[] gearRatio;
     private float totalGearRatio;
     private int gear = 1;
@@ -13,7 +14,7 @@ public class CarTransmission : MonoBehaviour
     public float gearChangeTime;
     void Start()
     {
-        
+        ce = GetComponent<CarEngine>();
     }
 
     // Update is called once per frame
@@ -29,12 +30,23 @@ public class CarTransmission : MonoBehaviour
             StartCoroutine(ChangeGear(false));
             //totalGearRatio = 0;
         }
-        totalGearRatio = gearRatio[gear] * mainGear *0.5f; //TODO Оптимизация
+        Debug.Log("TotalGearRatio= " + totalGearRatio);
+        //totalGearRatio = gearRatio[gear] * mainGear *0.5f; //TODO Оптимизация
     }
 
     public float TotalGearRatio()
     {
+        totalGearRatio = gearRatio[gear] * mainGear * 0.5f; //TODO Оптимизация
+        
         return totalGearRatio;
+    }
+
+    public float GetTrasmissionTorque()
+    {
+        var transmissionTorque = ce.GetEngineTorque() * totalGearRatio;
+        Debug.Log(transmissionTorque + " transmission torque");
+        return transmissionTorque;
+        
     }
 
     IEnumerator ChangeGear(bool up)
