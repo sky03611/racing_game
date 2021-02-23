@@ -44,9 +44,12 @@ public class CarTransmission : MonoBehaviour
     public float GetTrasmissionTorque()
     {
         var transmissionTorque = ce.GetEngineTorque() * totalGearRatio;
-        Debug.Log(transmissionTorque + " transmission torque");
         return transmissionTorque;
-        
+    }
+
+    public float GetCurrentGear()
+    {
+        return gear;
     }
 
     IEnumerator ChangeGear(bool up)
