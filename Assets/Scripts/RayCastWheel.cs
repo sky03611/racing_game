@@ -81,10 +81,21 @@ public class RayCastWheel : MonoBehaviour
         transform.localRotation = Quaternion.Euler(Vector3.up * wheelAngle);
         ApplySuspinsionForces();
         GetWheelSlipCombined();
-        Debugger();
         WheelAngularVelocity();
+        FrictionTorque();
+        Debugger();
         WheelRolling();
     }
+
+    private float FrictionTorque()
+    {
+        //frictiontorque = Friction*R
+        //angularAccTorque = torque/inertia;
+        var frictionTorque = (Mathf.Max(0,forceZ) * wheelRadius * Mathf.Clamp(longSlipVelocity/-10,-1,1)) /wheelInertia * Time.fixedDeltaTime;
+        wheelAngularVelocity += frictionTorque;
+        return frictionTorque;
+    }
+
     private void ApplySuspinsionForces()
     {
         rayLength = springTravel + springRestLength + wheelRadius;
