@@ -17,7 +17,9 @@ public class CarController : MonoBehaviour
     public float steerBackTime;
     private float ackermannAngleLeft;
     private float ackermannAngleRight;
+    private float driveTypeInt;
     private CarEngine ce;
+    private CarTransmission ct;
 
     internal enum driveType
     {
@@ -29,9 +31,9 @@ public class CarController : MonoBehaviour
     private driveType wheelDrive = driveType.awd;
     void Start()
     {
-
+        ct = GetComponent<CarTransmission>();
         rearTrack = rearTrack / 2;
-       // WheelDriveType();
+        WheelDriveType();
         CenterOfMassCorrector();
 
     }
@@ -49,14 +51,16 @@ public class CarController : MonoBehaviour
         {
             for (int i = 0; i < rayCastWheels.Length; i++)
             {
-                rayCastWheels[i].isDriven = true;
+                rayCastWheels[i].SetDriveType();
+                ct.DriveTypeForce(1f);
             }
         }
         else if (wheelDrive == driveType.fwd)
         {
             for (int i = 0; i < rayCastWheels.Length - 2; i++)
             {
-                rayCastWheels[i].isDriven = true;
+                rayCastWheels[i].SetDriveType();
+                ct.DriveTypeForce(1f);
             }
         }
 
@@ -64,9 +68,28 @@ public class CarController : MonoBehaviour
         {
             for (int i = 2; i < rayCastWheels.Length; i++)
             {
-                rayCastWheels[i].isDriven = true;
+                rayCastWheels[i].SetDriveType();
+                ct.DriveTypeForce(1f);
             }
         }
+    }
+
+    public float DriveTypeInt()
+    {
+        if (wheelDrive == driveType.awd)
+        {
+            driveTypeInt = 0;
+        }
+        else if(wheelDrive == driveType.fwd)
+        {
+            driveTypeInt = 1;
+        }
+        else
+        {
+            driveTypeInt = 2;
+        }
+
+        return driveTypeInt;
     }
 
     // Update is called once per frame

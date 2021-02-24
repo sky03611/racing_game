@@ -10,6 +10,7 @@ public class CarTransmission : MonoBehaviour
     private int gear = 1;
     private float mainGear = 3.82f;
     private float efficiency = 0.8f;
+    private float driveTypeForce;
     private bool isCoroutineExecuting;
     public float gearChangeTime;
     void Start()
@@ -30,13 +31,18 @@ public class CarTransmission : MonoBehaviour
             StartCoroutine(ChangeGear(false));
             //totalGearRatio = 0;
         }
-        Debug.Log("TotalGearRatio= " + totalGearRatio);
+
         //totalGearRatio = gearRatio[gear] * mainGear *0.5f; //TODO Оптимизация
+    }
+
+    public void DriveTypeForce(float var)
+    {
+        driveTypeForce = var;
     }
 
     public float TotalGearRatio()
     {
-        totalGearRatio = gearRatio[gear] * mainGear * 0.5f; //TODO Оптимизация
+        totalGearRatio = gearRatio[gear] * mainGear *driveTypeForce / efficiency; //TODO Оптимизация
         
         return totalGearRatio;
     }
