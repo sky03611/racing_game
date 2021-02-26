@@ -57,6 +57,8 @@ public class RayCastWheel : MonoBehaviour
     private bool isDriven;
     private Vector3 currentwheelVelocity;
 
+    private float driveAngularVelocity;
+
     private float aboba3;
     private float wheelAngularVelocityTest;
 
@@ -83,8 +85,9 @@ public class RayCastWheel : MonoBehaviour
    public  float maxFriction;
    public  float frictionCoefficient;
    public  float sY;
-   public  float slopeGrade;
-   public  float slipAnglePeak;
+    [Range(0, 100)]
+    public float slopeGrade;
+    public  float slipAnglePeak;
    public  float slipAngleDynamic;
    public  float slipAngle;
    public  float slidingCoefficient;
@@ -101,7 +104,6 @@ public class RayCastWheel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Initialize();
         isDriven = false;
         ce = transform.root.GetComponent<CarEngine>();
         cc = transform.root.GetComponent<CarController>();
@@ -147,7 +149,7 @@ public class RayCastWheel : MonoBehaviour
         ApplySuspensionForce();
         GetVelocityLocal();
         WheelAcceleration();
-
+        
         GetSx();
         GetSy();
         AddTireForce();
@@ -188,27 +190,43 @@ public class RayCastWheel : MonoBehaviour
     private void WheelAcceleration()
     {
         frictionTorque = fX * wheelRadius;
-        totalTorque = driveTorque - frictionTorque;
+        totalTorque = driveTorque * Input.GetAxis("Vertical") - frictionTorque;
+        
         wheelAngularAcceleration = totalTorque / wheelInertia;
         wheelAngularVelocity += wheelAngularAcceleration * deltaTime;
         wheelAngularVelocity = Mathf.Clamp(wheelAngularVelocity, -120, 120); //temp action
+
+        // frictionTorque = fX * wheelRadius;
+        // totalTorque = driveTorque - frictionTorque;
+        //wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (ct.GetTrasmissionTorque() / wheelInertia -frictionTorque) * deltaTime), Mathf.Abs(maxWheelSpeed));
+
+      //  if (ct.TotalGearRatio() != 0)
+      //  {
+      //      maxWheelSpeed = ce.EngineAngularVelocity() / ct.TotalGearRatio();
+      //  }
+      //  else
+      //  {
+      //      maxWheelSpeed = 100;
+      //  }
+        
     }
 
-    public void WheelAngularVelocity(float delta)
-    {
-        wheelInertia = Mathf.Pow(wheelRadius, 2) * wheelMass * 0.5f; //todo
-        if (isDriven)
-        {
-            transmissionTorque = ct.GetTrasmissionTorque();
-        }
-        else
-        {
-            transmissionTorque = 0f;
-        }
-        //wheelAngularVelocityTest += Time.fixedDeltaTime * transmissionTorque / wheelInertia;
-        //wheelAngularVelocity = Mathf.Min(maxWheelSpeed, wheelAngularVelocityTest);
-        wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (ct.GetTrasmissionTorque() / wheelInertia) * Time.fixedDeltaTime), Mathf.Abs(maxWheelSpeed));
-    }
+
+   // public void WheelAngularVelocity(float delta)
+   // {
+   //     wheelInertia = Mathf.Pow(wheelRadius, 2) * wheelMass * 0.5f; //todo
+   //     if (isDriven)
+   //     {
+   //         transmissionTorque = ct.GetTrasmissionTorque();
+   //     }
+   //     else
+   //     {
+   //         transmissionTorque = 0f;
+   //     }
+   //     //wheelAngularVelocityTest += Time.fixedDeltaTime * transmissionTorque / wheelInertia;
+   //     //wheelAngularVelocity = Mathf.Min(maxWheelSpeed, wheelAngularVelocityTest);
+   //     
+   // }
 
         void GetSx()
     {
@@ -324,27 +342,27 @@ public class RayCastWheel : MonoBehaviour
   //      
   //  }
 
-    public void TireFrictionTorque(float delta)
-    {
-        var frictionTorque = (Mathf.Max(0, forceZ) * wheelRadius * Mathf.Clamp(longSlipVelocity / -15, -1, 1)) / wheelInertia * Time.fixedDeltaTime;
-        wheelAngularVelocity += frictionTorque;
-        //max wheel speed on current gear
-        if (isDriven)
-        {
-            if (ct.TotalGearRatio() != 0)
-            {
-                maxWheelSpeed = ce.EngineAngularVelocity() / ct.TotalGearRatio();
-            }
-            else
-            {
-                maxWheelSpeed = 100;
-            }
-        }
-        else
-        {
-            maxWheelSpeed = wheelAngularVelocity;
-        }
-    }
+   // public void TireFrictionTorque(float delta)
+   // {
+   //     var frictionTorque = (Mathf.Max(0, forceZ) * wheelRadius * Mathf.Clamp(longSlipVelocity / -15, -1, 1)) / wheelInertia * Time.fixedDeltaTime;
+   //     wheelAngularVelocity += frictionTorque;
+   //     //max wheel speed on current gear
+   //     if (isDriven)
+   //     {
+   //         if (ct.TotalGearRatio() != 0)
+   //         {
+   //             maxWheelSpeed = ce.EngineAngularVelocity() / ct.TotalGearRatio();
+   //         }
+   //         else
+   //         {
+   //             maxWheelSpeed = 100;
+   //         }
+   //     }
+   //     else
+   //     {
+   //         maxWheelSpeed = wheelAngularVelocity;
+   //     }
+   // }
 
     public void WheelRolling(float delta)
     {
@@ -363,8 +381,8 @@ public class RayCastWheel : MonoBehaviour
             debugUI.WheelFrontLeftDebug4(wheelVelocityLS.z);
 
             debugUI.EngineRPM(ce.GetEngineRPM());
-            debugUI.CurrentGear(ct.GetCurrentGear()-1);
-            debugUI.TransmissionTorque(ct.GetTrasmissionTorque());
+            //debugUI.CurrentGear(ct.GetCurrentGear()-1);
+            //debugUI.TransmissionTorque(ct.GetTrasmissionTorque());
             debugUI.CarSpeed(Mathf.Round(rb.velocity.magnitude * 3.6f));
             debugUI.EngineTorque(ce.GetEngineTorque());
         }
@@ -399,42 +417,42 @@ public class RayCastWheel : MonoBehaviour
         //forceY = forceZ * Input.GetAxis("Horizontal");
     }
 
-    public void GetWheelSlipCombined()
-    {
-        if (isGrounded)
-        {
-            lateralSlipNormalized = Mathf.Clamp(wheelVelocityLS.x * cornerStiffness*-1, -1, 1);
-            longSlipVelocity = wheelAngularVelocity * wheelRadius - wheelVelocityLS.z;
-
-            if (wheelVelocityLS.z * longSlipVelocity > 0)
-            {
-                
-                //longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -2, 2);
-                longSlipNormalized = Mathf.Clamp(ct.GetTrasmissionTorque() / wheelRadius / Mathf.Max(0.00001f, forceZ), -2, 2);
-
-            }
-            else
-            {
-
-                longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -2, 2);
-            }
-            //longLateralVector.x = longSlipNormalized;
-            //longLateralVector.y = lateralSlipNormalized;
-            Vector2 lateralLongVector = new Vector2(longSlipNormalized,lateralSlipNormalized);
-            longLateralVector = lateralLongVector;
-            //var combinedSlip = longLateralVector.magnitude;
-            var combinedSlip = lateralLongVector.magnitude;
-            Vector2 tireForceNormalized = slipForceCurve.Evaluate(combinedSlip) * longLateralVector.normalized;
-            //Debug.Log(lateralSlipNormalized);
-            forceX = tireForceNormalized.x * Mathf.Max(0.0f, forceZ);
-            forceY = tireForceNormalized.y * Mathf.Max(0.0f, forceZ);
-        }
-        else
-        {
-            Debug.Log("No Gorund");
-        }
-        
-    }
+   // public void GetWheelSlipCombined()
+   // {
+   //     if (isGrounded)
+   //     {
+   //         lateralSlipNormalized = Mathf.Clamp(wheelVelocityLS.x * cornerStiffness*-1, -1, 1);
+   //         longSlipVelocity = wheelAngularVelocity * wheelRadius - wheelVelocityLS.z;
+   //
+   //         if (wheelVelocityLS.z * longSlipVelocity > 0)
+   //         {
+   //             
+   //             //longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -2, 2);
+   //             longSlipNormalized = Mathf.Clamp(ct.GetTrasmissionTorque() / wheelRadius / Mathf.Max(0.00001f, forceZ), -2, 2);
+   //
+   //         }
+   //         else
+   //         {
+   //
+   //             longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -2, 2);
+   //         }
+   //         //longLateralVector.x = longSlipNormalized;
+   //         //longLateralVector.y = lateralSlipNormalized;
+   //         Vector2 lateralLongVector = new Vector2(longSlipNormalized,lateralSlipNormalized);
+   //         longLateralVector = lateralLongVector;
+   //         //var combinedSlip = longLateralVector.magnitude;
+   //         var combinedSlip = lateralLongVector.magnitude;
+   //         Vector2 tireForceNormalized = slipForceCurve.Evaluate(combinedSlip) * longLateralVector.normalized;
+   //         //Debug.Log(lateralSlipNormalized);
+   //         forceX = tireForceNormalized.x * Mathf.Max(0.0f, forceZ);
+   //         forceY = tireForceNormalized.y * Mathf.Max(0.0f, forceZ);
+   //     }
+   //     else
+   //     {
+   //         Debug.Log("No Gorund");
+   //     }
+   //     
+   // }
 
     public float GetWheelAngularVelocity()
     {

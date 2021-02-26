@@ -37,11 +37,12 @@ public class CarAudio : MonoBehaviour
     public AudioSource Audio15;
     public AudioSource Audio16;
     private float engineRpm;
+    private CarEngine ce;
 
     void Start()
     {
-       
 
+        ce = GetComponent<CarEngine>();
         //Get 16x Audio Source
         Audio1 = Audio1.GetComponent<AudioSource>();
         Audio2 = Audio2.GetComponent<AudioSource>();
@@ -79,13 +80,14 @@ public class CarAudio : MonoBehaviour
         Audio16.Play();
     }
 
-    public void SetEngingeRpm(float rpm)
+    public void GetEngingeRpm()
     {
-        engineRpm = rpm;
+        engineRpm = ce.GetEngineRPM();
     }
 
     void Update()
     {
+        GetEngingeRpm();
         //Set Volume By Rpm's
         for (int i = 0; i < 16; i++)
         {

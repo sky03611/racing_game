@@ -31,7 +31,7 @@ public class Dashboard : MonoBehaviour
 
     void Update()
     {
-        Tachometer();
+       // Tachometer();
     }
 
     private void Tachometer()

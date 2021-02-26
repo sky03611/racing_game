@@ -1,90 +1,84 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CarTransmission : MonoBehaviour
 {
-    private CarEngine ce;
-    public float[] gearRatio;
-    private float totalGearRatio;
-    private int gear = 1;
-    private float mainGear = 3.82f;
-    private float efficiency = 0.8f;
-    private float driveTypeForce;
-    private bool isCoroutineExecuting;
-    public float gearChangeTime;
-    void Start()
+    [HideInInspector] public float currentGearRatio;
+
+    public bool inGear;
+    public float[] gearRatios;
+    public float shiftTime;
+    private string[] gearDisplayDictionary;
+    public string gearDisplay;
+    private int currentGear;
+    private int nextGear;
+
+    // Start is called before the first frame update
+    public void Initialize()
     {
-        ce = GetComponent<CarEngine>();
-        TotalGearRatio();
+        inGear = true;
+        nextGear = 1;
+        currentGear = 1;
+
+        gearDisplayDictionary = new string[gearRatios.Length];
+        gearDisplayDictionary[0] = "R";
+        gearDisplayDictionary[1] = "N";
+       for (int i = 2; i < gearRatios.Length; i++)
+       {
+           gearDisplayDictionary[i] = Convert.ToString(i - 1);
+       }
+    }  
+
+    void Update()
+    {
+        currentGearRatio = gearRatios[currentGear];
+        gearDisplay = gearDisplayDictionary[currentGear];
+        Debug.Log(currentGear);
     }
 
     // Update is called once per frame
-    void Update()
+    public void GearUp()
     {
-        TotalGearRatio();
-        if (Input.GetKeyDown(KeyCode.P))
+        if (inGear && currentGear != gearRatios.Length - 1)
         {
-            StartCoroutine(ChangeGear(true));
-            //totalGearRatio = 0;
+            if (currentGear != 1)
+            {
+                nextGear++;
+                StartCoroutine(GearChange(nextGear, shiftTime));
+            }
+            else
+            {
+                nextGear++;
+                currentGear = nextGear;
+            }
         }
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            StartCoroutine(ChangeGear(false));
-            //totalGearRatio = 0;
-        }
-
-        //totalGearRatio = gearRatio[gear] * mainGear *0.5f; //TODO Оптимизация
     }
 
-    public void DriveTypeForce(float var)
+    public void GearDown()
     {
-        driveTypeForce = var;
-    }
-
-    public float TotalGearRatio()
-    {
-        totalGearRatio = gearRatio[gear] * mainGear *driveTypeForce / efficiency; //TODO Оптимизация
-        
-        return totalGearRatio;
-    }
-
-    public float GetTrasmissionTorque()
-    {
-        var transmissionTorque = ce.GetEngineTorque() * totalGearRatio;
-        return transmissionTorque;
-    }
-
-    public float GetCurrentGear()
-    {
-        return gear;
-    }
-
-    IEnumerator ChangeGear(bool up)
-    {
-        
-        if (isCoroutineExecuting)
+        if (inGear && currentGear != 0)
         {
-            Debug.Log("Break");
-            yield break;
+            if (currentGear != 1)
+            {
+                nextGear--;
+                StartCoroutine(GearChange(nextGear, shiftTime));
+            }
+            else
+            {
+                nextGear--;
+                currentGear = nextGear;
+            }
         }
-            
-        isCoroutineExecuting = true;
-        yield return new WaitForSeconds(gearChangeTime);
-        if (up && gear < gearRatio.Length - 1)
-        {
-            gear++;
-            Debug.Log("FCurrentGear= " + gear);
-            //totalGearRatio = gearRatio[gear] * mainGear;
-        }
+    }
 
-        if (!up && gear > 0)
-        {
-            gear--;
-            Debug.Log("RCurrentGear= " + gear);
-            //totalGearRatio = gearRatio[gear] * mainGear;
-        }
-        isCoroutineExecuting = false;
-        
+    IEnumerator GearChange(int nextGear, float shiftTime)
+    {
+        inGear = false;
+        currentGear = 1;
+        yield return new WaitForSeconds(shiftTime);
+        currentGear = nextGear;
+        inGear = true;
     }
 }

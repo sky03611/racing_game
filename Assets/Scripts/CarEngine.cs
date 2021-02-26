@@ -10,19 +10,16 @@ public class CarEngine : MonoBehaviour
     public float engineIdleRpm = 600f;
     public float inertia = 0.3f;
     public float backTorque = -100f;
-    public float throtleValue;
+    public float throttle;
     private float torquePower;
     private float engineTorqueValue;
     private float engineAngularVelocity;
     private float rpmToRadsSec;
     private float radsSecToRpm;
-
+    private float engineAngularAcc;
     private float totalDriveAxisAngularVelocity = 0f;
     private float clutchAngularVelocity = 0f;
 
-    float engineangularvel1;
-    float currentTotalDriveAxisAngularVelocity;
-    float lastDriveAxis;
 
 
     //DashBoard
@@ -32,60 +29,31 @@ public class CarEngine : MonoBehaviour
     private CarController cc;
 
 
-    void Start()
+    public void Initialize()
     {
         
-        dashBoard = GetComponent<Dashboard>();
-        dashBoard.SetEngineMaxRpm(engineMaxRpm);
-        ca = GetComponent<CarAudio>();
+       // dashBoard = GetComponent<Dashboard>();
+       // dashBoard.SetEngineMaxRpm(engineMaxRpm);
+       // ca = GetComponent<CarAudio>();
         ct = GetComponent<CarTransmission>();
         cc = GetComponent<CarController>();
         rpmToRadsSec = Mathf.PI * 2 / 60;
         radsSecToRpm = 1 / rpmToRadsSec;
-        engineRpm = engineIdleRpm; // на всякий случай
+        engineRpm = engineIdleRpm; // 
     }
 
-   void FixedUpdate()
-    {
-        //UpdatePhysics();
-    }
 
-    public void UpdatePhysics(float delta)
+    public void UpdatePhysics(float delta, float var)
     {
-       
-        torquePower = engineTorqueCurve.Evaluate(engineRpm);
-        engineTorqueValue = Mathf.Lerp(backTorque, engineRpm, throtleValue) / inertia * delta; // Суммарный крутящий угловой момент radsSec EAC
-        engineAngularVelocity = Mathf.Clamp(engineTorqueValue + engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
-        
+        throttle = var;
+        torquePower = Mathf.Lerp(backTorque, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
+        engineAngularAcc = torquePower/ inertia; 
+        engineAngularVelocity += engineAngularAcc  * delta;
+        engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineRpm = engineAngularVelocity * radsSecToRpm;
-        dashBoard.SetEngineRpm(engineRpm); // Send Rpm to dashboard
-        ca.SetEngingeRpm(engineRpm); // send Rpm to audio script
-                                     //transmissionEngineTorque = ct.TotalGearRatio() * torquePower;
-                                     //Debug.Log("transmissionEngineTorque " + ct.TotalGearRatio());
-        SetEngineAngularVelocity();
     }
 
-    public void SetEngineAngularVelocity()
-    {
-        totalDriveAxisAngularVelocity = 0;
-        //cc.rayCastWheels[0].GetWheelAngularVelocity();
-
-            for (int i = 2; i < cc.rayCastWheels.Length; i++)
-            {
-                totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 2;
-            }
-
-
-        clutchAngularVelocity = totalDriveAxisAngularVelocity * ct.TotalGearRatio();
-        if (ct.GetCurrentGear() != 1)
-        {
-            engineAngularVelocity = Mathf.Clamp((clutchAngularVelocity - engineAngularVelocity) *0.2f + engineAngularVelocity, engineIdleRpm * Mathf.PI * 2 / 60, engineMaxRpm * Mathf.PI * 2 / 60);
-            
-        }
-        Debug.Log(engineAngularVelocity);
-        
-
-    }
+    
 
     public float GetEngineTorque()
     {

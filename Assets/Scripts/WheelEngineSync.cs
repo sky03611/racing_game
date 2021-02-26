@@ -19,37 +19,37 @@ public class WheelEngineSync : MonoBehaviour
         ce = GetComponent<CarEngine>();
     }
 
-     public void UpdatePhysics(float delta)
-    {
-        totalDriveAxisAngularVelocity = 0;
-        engineAngularVel = ce.EngineAngularVelocity();
-        //cc.rayCastWheels[0].GetWheelAngularVelocity();
-        if (cc.DriveTypeInt() == 0)
-        {
-            for (int i = 0; i < cc.rayCastWheels.Length; i++)
-            {
-                totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 4;
-            }
-        }
-        else if (cc.DriveTypeInt() == 1)
-        {
-            for (int i = 0; i < cc.rayCastWheels.Length - 2; i++)
-            {
-                totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 2;
-            }
-        }
-        else
-        {
-            for (int i = 2; i < cc.rayCastWheels.Length; i++)
-            {
-                totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 2;
-            }
-        }
-        clutchAngularVelocity = totalDriveAxisAngularVelocity * ct.TotalGearRatio();
-        if (ct.GetCurrentGear() != 1) 
-                {
-           test1 = Mathf.Clamp((clutchAngularVelocity - engineAngularVel) * 5f +engineAngularVel, ce.engineIdleRpm * Mathf.PI * 2 / 60, ce.engineMaxRpm * Mathf.PI * 2 / 60);
-           // ce.SetEngineAngularVelocity(test1);
-                }
-    }
+   //  public void UpdatePhysics(float delta)
+   // {
+   //     totalDriveAxisAngularVelocity = 0;
+   //     engineAngularVel = ce.EngineAngularVelocity();
+   //     //cc.rayCastWheels[0].GetWheelAngularVelocity();
+   //     if (cc.DriveTypeInt() == 0)
+   //     {
+   //         for (int i = 0; i < cc.rayCastWheels.Length; i++)
+   //         {
+   //             totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 4;
+   //         }
+   //     }
+   //     else if (cc.DriveTypeInt() == 1)
+   //     {
+   //         for (int i = 0; i < cc.rayCastWheels.Length - 2; i++)
+   //         {
+   //             totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 2;
+   //         }
+   //     }
+   //     else
+   //     {
+   //         for (int i = 2; i < cc.rayCastWheels.Length; i++)
+   //         {
+   //             totalDriveAxisAngularVelocity += cc.rayCastWheels[i].GetWheelAngularVelocity() / 2;
+   //         }
+   //     }
+   //     clutchAngularVelocity = totalDriveAxisAngularVelocity * ct.TotalGearRatio();
+   //     if (ct.GetCurrentGear() != 1) 
+   //             {
+   //        test1 = Mathf.Clamp((clutchAngularVelocity - engineAngularVel) * 5f +engineAngularVel, ce.engineIdleRpm * Mathf.PI * 2 / 60, ce.engineMaxRpm * Mathf.PI * 2 / 60);
+   //        // ce.SetEngineAngularVelocity(test1);
+   //             }
+   // }
 }

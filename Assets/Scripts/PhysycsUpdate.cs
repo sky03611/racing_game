@@ -4,36 +4,79 @@ using UnityEngine;
 
 public class PhysycsUpdate : MonoBehaviour
 {
-    private float delta;
+    private float deltaTime;
     private CarEngine ce;
     private CarTransmission ct;
     private CarController cc;
     private WheelEngineSync wes;
     private float driveTorque;
-    
-    void Start()
+    private float wheelangularVelComb;
+    private RayCastWheel[] wheels;
+    private float throttle;
+
+    void Awake()
     {
-        ce = GetComponent<CarEngine>();
-        ct = GetComponent<CarTransmission>();
-        cc = GetComponent<CarController>();
-        wes = GetComponent<WheelEngineSync>();
+        GetComponents();
+        InitializeComponents();
     }
 
-    // Update is called once per frame
+    void GetComponents()
+    {
+        wheels = GetComponentsInChildren<RayCastWheel>();
+        ce = GetComponent<CarEngine>();
+        ct = GetComponent<CarTransmission>();
+    }
+
+    void InitializeComponents()
+    {
+        ce.Initialize();
+        ct.Initialize();
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            wheels[i].Initialize();
+        }
+    }
+
+
     void FixedUpdate()
     {
-       
-        driveTorque = ct.GetTrasmissionTorque();
-        delta = Time.fixedDeltaTime;
-        for (int i = 0; i < cc.rayCastWheels.Length-2; i++)
-        {
-            cc.rayCastWheels[i].UpdatePhysics(delta, 0);
-        }
+        GetGlobalVariables();
 
-        for (int i = 2; i < cc.rayCastWheels.Length ; i++)
+        UpdatePhysics();
+    }
+
+    void GetGlobalVariables()
+    {
+        deltaTime = Time.fixedDeltaTime;
+        throttle = Input.GetAxisRaw("Vertical");
+    }
+
+    void UpdatePhysics()
+    {
+        Shifter();
+        ce.UpdatePhysics(deltaTime, throttle); ;
+       
+        //driveTorque = ct.GetTrasmissionTorque();
+        for (int i = 0; i < wheels.Length - 2; i++)
         {
-            cc.rayCastWheels[i].UpdatePhysics(delta, driveTorque);
+            wheels[i].UpdatePhysics(deltaTime, 0);
         }
-        ce.UpdatePhysics(delta);
+        for (int i = 2; i < wheels.Length; i++)
+        {
+            wheels[i].UpdatePhysics(deltaTime, driveTorque);
+        }
+    }
+
+    private void Shifter()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            ct.GearUp();
+            
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            ct.GearDown();
+        }
     }
 }
