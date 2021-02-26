@@ -19,7 +19,7 @@ public class WheelEngineSync : MonoBehaviour
         ce = GetComponent<CarEngine>();
     }
 
-    void FixedUpdate()
+     public void UpdatePhysics(float delta)
     {
         totalDriveAxisAngularVelocity = 0;
         engineAngularVel = ce.EngineAngularVelocity();

@@ -16,12 +16,14 @@ public class CarTransmission : MonoBehaviour
     void Start()
     {
         ce = GetComponent<CarEngine>();
+        TotalGearRatio();
     }
 
     // Update is called once per frame
     void Update()
     {
-       if (Input.GetKeyDown(KeyCode.P))
+        TotalGearRatio();
+        if (Input.GetKeyDown(KeyCode.P))
         {
             StartCoroutine(ChangeGear(true));
             //totalGearRatio = 0;
