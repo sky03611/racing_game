@@ -56,7 +56,7 @@ public class PhysycsUpdate : MonoBehaviour
         Shifter();
         
         ce.UpdatePhysics(deltaTime, throttle); ;
-        driveTorque = ce.GetEngineTorque() * ct.GetTotalGearRatio();
+        driveTorque = ce.ToWheels();
         //driveTorque = ct.GetTrasmissionTorque();
         for (int i = 0; i < wheels.Length - 2; i++)
         {

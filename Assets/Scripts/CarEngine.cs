@@ -20,6 +20,11 @@ public class CarEngine : MonoBehaviour
     private float totalDriveAxisAngularVelocity = 0f;
     private float clutchAngularVelocity = 0f;
 
+    float deltaTime;
+    float baseTorque;
+    float toEngine;
+    public float clutch;
+
 
 
     //DashBoard
@@ -45,19 +50,37 @@ public class CarEngine : MonoBehaviour
 
     public void UpdatePhysics(float delta, float var)
     {
-       
+        deltaTime = delta;
         throttle = var;
         torquePower = Mathf.Lerp(backTorque, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
         engineAngularAcc = torquePower/ inertia; 
         engineAngularVelocity += engineAngularAcc * delta;
-        engineAngularVelocity = Mathf.Clamp((clutchAngularVelocity- engineAngularVelocity), engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
-        //engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
-        engineRpm = engineAngularVelocity * radsSecToRpm;
+       // engineAngularVelocity = Mathf.Clamp((clutchAngularVelocity- engineAngularVelocity), engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
+        engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
+        engineRpm = engineAngularVelocity *radsSecToRpm;
+        
         
     }
 
      
+    public float ToWheels()
+    {
+        var toWheels = torquePower * ct.GetTotalGearRatio();
+        return toWheels;
+    }
+
+    public float ToEngine()
+    {
+        toEngine = (cc.rayCastWheels[3].GetWheelAngularVelocity() * ct.GetTotalGearRatio() - engineAngularVelocity) * clutch *radsSecToRpm;
+        toEngine = Mathf.Clamp(toEngine, engineIdleRpm, engineMaxRpm);
+        return toEngine;
+    }
     
+    public float BaseTorque()
+    {
+        baseTorque += (cc.rayCastWheels[3].GetWheelAngularVelocity() * radsSecToRpm - engineAngularVelocity * radsSecToRpm) * clutch / (cc.rayCastWheels[0].wheelInertia + inertia);
+        return baseTorque;
+    }
 
     public float GetEngineTorque()
     {
