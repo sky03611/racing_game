@@ -14,6 +14,7 @@ public class CarTransmission : MonoBehaviour
     public string gearDisplay;
     private int currentGear;
     private int nextGear;
+    private float mainGear = 3.82f;
 
     // Start is called before the first frame update
     public void Initialize()
@@ -33,9 +34,14 @@ public class CarTransmission : MonoBehaviour
 
     void Update()
     {
-        currentGearRatio = gearRatios[currentGear];
+        currentGearRatio = gearRatios[currentGear] ;
         gearDisplay = gearDisplayDictionary[currentGear];
         Debug.Log(currentGear);
+    }
+
+    public float GetTotalGearRatio()
+    {
+        return currentGearRatio * mainGear;
     }
 
     // Update is called once per frame

@@ -22,7 +22,7 @@ public class RayCastWheel : MonoBehaviour
 
     public float springTravel = 10f;
     public float wheelRadius = 34f;
-    private float wheelInertia;
+    public float wheelInertia;
     private float wheelAngularVelocity;
     public float wheelMass;
 

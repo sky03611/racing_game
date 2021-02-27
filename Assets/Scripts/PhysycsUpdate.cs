@@ -41,7 +41,7 @@ public class PhysycsUpdate : MonoBehaviour
     void FixedUpdate()
     {
         GetGlobalVariables();
-
+        
         UpdatePhysics();
     }
 
@@ -54,17 +54,21 @@ public class PhysycsUpdate : MonoBehaviour
     void UpdatePhysics()
     {
         Shifter();
+        
         ce.UpdatePhysics(deltaTime, throttle); ;
-       
+        driveTorque = ce.GetEngineTorque() * ct.GetTotalGearRatio();
         //driveTorque = ct.GetTrasmissionTorque();
         for (int i = 0; i < wheels.Length - 2; i++)
         {
             wheels[i].UpdatePhysics(deltaTime, 0);
+            wheels[i].WheelRolling(deltaTime);
         }
         for (int i = 2; i < wheels.Length; i++)
         {
             wheels[i].UpdatePhysics(deltaTime, driveTorque);
+            wheels[i].WheelRolling(deltaTime);
         }
+       
     }
 
     private void Shifter()
@@ -79,4 +83,6 @@ public class PhysycsUpdate : MonoBehaviour
             ct.GearDown();
         }
     }
+
+   
 }

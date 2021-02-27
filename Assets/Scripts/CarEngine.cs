@@ -45,14 +45,18 @@ public class CarEngine : MonoBehaviour
 
     public void UpdatePhysics(float delta, float var)
     {
+       
         throttle = var;
         torquePower = Mathf.Lerp(backTorque, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
         engineAngularAcc = torquePower/ inertia; 
-        engineAngularVelocity += engineAngularAcc  * delta;
-        engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
+        engineAngularVelocity += engineAngularAcc * delta;
+        engineAngularVelocity = Mathf.Clamp((clutchAngularVelocity- engineAngularVelocity), engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
+        //engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineRpm = engineAngularVelocity * radsSecToRpm;
+        
     }
 
+     
     
 
     public float GetEngineTorque()
