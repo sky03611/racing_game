@@ -33,7 +33,7 @@ public class CarController : MonoBehaviour
     {
         ct = GetComponent<CarTransmission>();
         rearTrack = rearTrack / 2;
-        WheelDriveType();
+        //WheelDriveType();
         CenterOfMassCorrector();
 
     }
@@ -45,34 +45,34 @@ public class CarController : MonoBehaviour
         ce = GetComponent<CarEngine>();
     }
 
-    private void WheelDriveType()
-    {
-        if (wheelDrive == driveType.awd)
-        {
-            for (int i = 0; i < rayCastWheels.Length; i++)
-            {
-                rayCastWheels[i].SetDriveType();
-                ct.DriveTypeForce(1f);
-            }
-        }
-        else if (wheelDrive == driveType.fwd)
-        {
-            for (int i = 0; i < rayCastWheels.Length - 2; i++)
-            {
-                rayCastWheels[i].SetDriveType();
-                ct.DriveTypeForce(1f);
-            }
-        }
-
-        else if (wheelDrive == driveType.rwd)
-        {
-            for (int i = 2; i < rayCastWheels.Length; i++)
-            {
-                rayCastWheels[i].SetDriveType();
-                ct.DriveTypeForce(1f);
-            }
-        }
-    }
+   // private void WheelDriveType()
+   // {
+   //     if (wheelDrive == driveType.awd)
+   //     {
+   //         for (int i = 0; i < rayCastWheels.Length; i++)
+   //         {
+   //             rayCastWheels[i].SetDriveType();
+   //             ct.DriveTypeForce(1f);
+   //         }
+   //     }
+   //     else if (wheelDrive == driveType.fwd)
+   //     {
+   //         for (int i = 0; i < rayCastWheels.Length - 2; i++)
+   //         {
+   //             rayCastWheels[i].SetDriveType();
+   //             ct.DriveTypeForce(1f);
+   //         }
+   //     }
+   //
+   //     else if (wheelDrive == driveType.rwd)
+   //     {
+   //         for (int i = 2; i < rayCastWheels.Length; i++)
+   //         {
+   //             rayCastWheels[i].SetDriveType();
+   //             ct.DriveTypeForce(1f);
+   //         }
+   //     }
+   // }
 
     public float DriveTypeInt()
     {
@@ -95,7 +95,7 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ce.throtleValue = Input.GetAxis("Vertical");
+        
         steerInputs = Input.GetAxis("Horizontal");
         if (Input.GetAxis("Horizontal") > 0)
         {

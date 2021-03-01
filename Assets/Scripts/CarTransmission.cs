@@ -1,88 +1,119 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CarTransmission : MonoBehaviour
 {
-    private CarEngine ce;
-    public float[] gearRatio;
-    private float totalGearRatio;
-    private int gear = 1;
+    [HideInInspector] public float currentGearRatio;
+
+    public bool inGear;
+    public float[] gearRatios;
+    public float shiftTime;
+    private string[] gearDisplayDictionary;
+    public string gearDisplay;
+    private int currentGear;
+    private int nextGear;
     private float mainGear = 3.82f;
-    private float efficiency = 0.8f;
-    private float driveTypeForce;
-    private bool isCoroutineExecuting;
-    public float gearChangeTime;
-    void Start()
+    private CarEngine ce;
+    float fu;
+    float deltaTime;
+
+    // Start is called before the first frame update
+    public void Initialize()
     {
         ce = GetComponent<CarEngine>();
+        inGear = true;
+        nextGear = 1;
+        currentGear = 1;
+
+        gearDisplayDictionary = new string[gearRatios.Length];
+        gearDisplayDictionary[0] = "R";
+        gearDisplayDictionary[1] = "N";
+        for (int i = 2; i < gearRatios.Length; i++)
+        {
+            gearDisplayDictionary[i] = Convert.ToString(i - 1);
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
-       if (Input.GetKeyDown(KeyCode.P))
-        {
-            StartCoroutine(ChangeGear(true));
-            //totalGearRatio = 0;
-        }
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            StartCoroutine(ChangeGear(false));
-            //totalGearRatio = 0;
-        }
-
-        //totalGearRatio = gearRatio[gear] * mainGear *0.5f; //TODO Оптимизация
+        currentGearRatio = gearRatios[currentGear] *mainGear;
+        gearDisplay = gearDisplayDictionary[currentGear];
+        Debug.Log(currentGear);
+    }
+    public void PhysicsUpdate(float delta)
+    {
+        deltaTime = delta;
     }
 
-    public void DriveTypeForce(float var)
+    public float GetTotalGearRatio()
     {
-        driveTypeForce = var;
+        return currentGearRatio ;
     }
 
-    public float TotalGearRatio()
+    public int GetCurrentGear()
     {
-        totalGearRatio = gearRatio[gear] * mainGear *driveTypeForce / efficiency; //TODO Оптимизация
-        
-        return totalGearRatio;
+        return currentGear;
     }
 
-    public float GetTrasmissionTorque()
+    public float GetTransmissionTorque()
     {
-        var transmissionTorque = ce.GetEngineTorque() * totalGearRatio;
-        return transmissionTorque;
-    }
-
-    public float GetCurrentGear()
-    {
-        return gear;
-    }
-
-    IEnumerator ChangeGear(bool up)
-    {
-        
-        if (isCoroutineExecuting)
+        fu = 0;
+        if (currentGearRatio != 0)
         {
-            Debug.Log("Break");
-            yield break;
+            return ce.GetEngineTorque() * currentGearRatio;
         }
-            
-        isCoroutineExecuting = true;
-        yield return new WaitForSeconds(gearChangeTime);
-        if (up && gear < gearRatio.Length - 1)
+        else
         {
-            gear++;
-            Debug.Log("FCurrentGear= " + gear);
-            //totalGearRatio = gearRatio[gear] * mainGear;
+            return 0;
         }
 
-        if (!up && gear > 0)
+    }
+
+
+
+    // Update is called once per frame
+    public void GearUp()
+    {
+        if (inGear && currentGear != gearRatios.Length - 1)
         {
-            gear--;
-            Debug.Log("RCurrentGear= " + gear);
-            //totalGearRatio = gearRatio[gear] * mainGear;
+            if (currentGear != 1)
+            {
+                nextGear++;
+                StartCoroutine(GearChange(nextGear, shiftTime));
+            }
+            else
+            {
+                nextGear++;
+                currentGear = nextGear;
+            }
         }
-        isCoroutineExecuting = false;
-        
+    }
+
+    public void GearDown()
+    {
+        if (inGear && currentGear != 0)
+        {
+            if (currentGear != 1)
+            {
+                nextGear--;
+                StartCoroutine(GearChange(nextGear, shiftTime));
+            }
+            else
+            {
+                nextGear--;
+                currentGear = nextGear;
+            }
+        }
+    }
+
+    IEnumerator GearChange(int nextGear, float shiftTime)
+    {
+        inGear = false;
+        currentGear = 1;
+        yield return new WaitForSeconds(shiftTime);
+        currentGear = nextGear;
+        inGear = true;
     }
 }

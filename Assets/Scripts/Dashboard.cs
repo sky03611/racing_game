@@ -17,21 +17,23 @@ public class Dashboard : MonoBehaviour
     void Start()
     {
         ce = GetComponent<CarEngine>();
+        engineMaxRpm = ce.engineMaxRpm;
     }
 
-    public void SetEngineRpm(float currentRpm)
+    public void SetEngineRpm()
     {
-        engineRpm = currentRpm;
+        engineRpm = ce.GetEngineRPM();
     }
 
     public void SetEngineMaxRpm(float maxRpm)
     {
-        engineMaxRpm = maxRpm;
+        engineMaxRpm = ce.engineMaxRpm;
     }
 
-    void Update()
+    public void PhysicsUpdate()
     {
-        Tachometer();
+         Tachometer();
+        SetEngineRpm();
     }
 
     private void Tachometer()
