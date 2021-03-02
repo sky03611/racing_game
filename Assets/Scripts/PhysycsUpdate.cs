@@ -8,7 +8,9 @@ public class PhysycsUpdate : MonoBehaviour
     private CarEngine ce;
     private CarTransmission ct;
     private CarController cc;
+    private AntiRollBar arb;
     private Dashboard db;
+
     float throttle;
     
     void Start()
@@ -16,9 +18,19 @@ public class PhysycsUpdate : MonoBehaviour
         ce = GetComponent<CarEngine>();
         ct = GetComponent<CarTransmission>();
         cc = GetComponent<CarController>();
-        ct.Initialize();
-        ce.Initialize();
+        arb = GetComponent<AntiRollBar>();
         db = GetComponent<Dashboard>();
+        cc.Initialize();
+        ct.Initialize(cc.GetDriveTypeDivider());
+        ce.Initialize();
+        arb.Initialize();
+       
+        
+    }
+
+    void Update()
+    {
+        Shifter();
     }
 
     // Update is called once per frame
@@ -26,19 +38,49 @@ public class PhysycsUpdate : MonoBehaviour
     {
         delta = Time.fixedDeltaTime;
         throttle = Input.GetAxis("Vertical");
-        Shifter();
+        
         ce.TestTorque();
-
+        cc.SteerFactorChanger();
         ce.UpdatePhysics(delta, throttle);
         ct.PhysicsUpdate(delta);
         db.PhysicsUpdate();
-        
-        for (int i = 0; i < cc.rayCastWheels.Length; i++)
+        //awd
+        if (cc.DriveTypeInt() == 0)
         {
-            cc.rayCastWheels[i].PhysicsUpdate(delta, 0);
+            for (int i = 0; i < cc.rayCastWheels.Length; i++)
+            {
+                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
+            }
         }
+        //fwd
+        if (cc.DriveTypeInt() == 1)
+        {
+            for (int i = 0; i < cc.rayCastWheels.Length-2; i++)
+            {
+                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
+            }
+            for (int i = 2; i < cc.rayCastWheels.Length; i++)
+            {
+                cc.rayCastWheels[i].PhysicsUpdate(delta, 0f);
+            }
+        }
+    
+        //rwd
+        if (cc.DriveTypeInt() == 2)
+        {
+            for (int i = 2; i < cc.rayCastWheels.Length ; i++)
+            {
+                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
+            }
 
-        
+            for (int i = 0; i < cc.rayCastWheels.Length-2; i++)
+            {
+                cc.rayCastWheels[i].PhysicsUpdate(delta, 0f);
+            }
+        }
+        //arb.PhysicsUpdate();
+
+
     }
 
     private void Shifter()

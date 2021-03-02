@@ -27,7 +27,7 @@ public class RayCastWheel : MonoBehaviour
 
     private float rayLength;
     private float rayMinLenth;
-    private bool isGrounded = false;
+    public bool isGrounded = false;
     private float maxLength;
     private float springLength;
     private float springForce;
@@ -47,6 +47,8 @@ public class RayCastWheel : MonoBehaviour
     private float wheelangularVelDeg;
     private Vector2 longLateralVector;
     public float longStiffness = 1f;
+    public float frictionCoefficientX;
+    public float frictionCoefficientY;
 
     public float steerAngle;
     public float cornerStiffness;
@@ -64,7 +66,7 @@ public class RayCastWheel : MonoBehaviour
     float driveTorque;
     [HideInInspector]
     public RaycastHit hit;
-    float currentLength;
+    public float currentLength;
     float frictionTorque;
     void Start()
     {
@@ -80,19 +82,21 @@ public class RayCastWheel : MonoBehaviour
 
     public void PhysicsUpdate(float delta, float torque)
     {
-        Debugger();
+        //Debugger();
         deltaTime = delta;
         driveTorque = torque;
         RaycastSingle();
-        GetSuspensionForce();
-        ApplySuspinsionForce();
-        GetVelocityLocal();
-        GetWheelSlipCombined();
-        WheelAngularVelocity();
-        TireFrictionTorque();
-        
-        AddTireForce();
+        if (isGrounded)
+        {
+            GetSuspensionForce();
+            ApplySuspinsionForce();
+            GetVelocityLocal();
+            GetWheelSlipCombined();
+            WheelAngularVelocity();
+            TireFrictionTorque();
 
+            AddTireForce();
+        }
         WheelRolling();
     }
 
@@ -140,16 +144,14 @@ public class RayCastWheel : MonoBehaviour
 
     private void WheelAngularVelocity()
     {
-       
-        
         wheelInertia = Mathf.Pow(wheelRadius, 2) * wheelMass * 0.5f;
-        Debug.Log(ct.GetTransmissionTorque() / wheelInertia);
         frictionTorque = (Mathf.Max(0, forceZ) * wheelRadius * Mathf.Clamp(longSlipVelocity / -strangeFactor, -1, 1)) / wheelInertia*deltaTime;
-        var wheelAngularAcceleration = ct.GetTransmissionTorque() / wheelInertia *deltaTime;
-        wheelAngularVelocity = Mathf.Sign(maxWheelSpeed)* Mathf.Min(Mathf.Abs(wheelAngularVelocity += wheelAngularAcceleration+ frictionTorque), Mathf.Abs(maxWheelSpeed));
+        var wheelAngularAcceleration = driveTorque / wheelInertia *deltaTime;
+        wheelAngularVelocity = Mathf.Sign(maxWheelSpeed)* Mathf.Min(Mathf.Abs(wheelAngularVelocity += wheelAngularAcceleration), Mathf.Abs(maxWheelSpeed));
+        wheelAngularVelocity = wheelAngularVelocity + frictionTorque;
         // wheelAngularVelocity = Mathf.Min(maxWheelSpeed, wheelAngularVelocityTest);
         ; //todo
-        // wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (ct.GetTransmissionTorque() / wheelInertia) * deltaTime), Mathf.Abs(maxWheelSpeed));
+        // wheelAngularVelocity = Mathf.Sign(maxWheelSpeed) * Mathf.Min(Mathf.Abs(wheelAngularVelocity += (driveTorque / wheelInertia) * deltaTime), Mathf.Abs(maxWheelSpeed));
          if (ct.GetTotalGearRatio() != 0)
          {
              maxWheelSpeed = ce.EngineAngularVelocity() / ct.GetTotalGearRatio();
@@ -194,7 +196,7 @@ public class RayCastWheel : MonoBehaviour
 
             debugUI.EngineRPM(ce.GetEngineRPM());
             debugUI.CurrentGear(ct.GetCurrentGear()-1);
-            debugUI.TransmissionTorque(ct.GetTransmissionTorque());
+            debugUI.TransmissionTorque(driveTorque);
             debugUI.CarSpeed(Mathf.Round(rb.velocity.magnitude * 3.6f));
             debugUI.EngineTorque(ce.GetEngineTorque());
         }
@@ -240,7 +242,7 @@ public class RayCastWheel : MonoBehaviour
             {
                 
                 //longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -2, 2);
-                longSlipNormalized = Mathf.Clamp(ct.GetTransmissionTorque() / wheelRadius / Mathf.Max(0.00001f, forceZ), -2, 2);
+                longSlipNormalized = Mathf.Clamp(driveTorque / wheelRadius / Mathf.Max(0.00001f, forceZ), -2, 2);
 
             }
             else
@@ -256,8 +258,16 @@ public class RayCastWheel : MonoBehaviour
             var combinedSlip = lateralLongVector.magnitude;
             Vector2 tireForceNormalized = slipForceCurve.Evaluate(combinedSlip) * longLateralVector.normalized;
             //Debug.Log(lateralSlipNormalized);
-            forceX = tireForceNormalized.x * Mathf.Max(0.0f, forceZ);
-            forceY = tireForceNormalized.y * Mathf.Max(0.0f, forceZ);
+            
+            forceX = tireForceNormalized.x * Mathf.Max(0.0f, forceZ) * frictionCoefficientX;
+            if (wheelFL || wheelFR)
+            {
+                forceY = tireForceNormalized.y * Mathf.Max(0.0f, 3000) * frictionCoefficientY;
+            }
+            else
+            {
+                forceY = tireForceNormalized.y * Mathf.Max(0.0f, 3000) * frictionCoefficientY;
+            }
         }
         else
         {

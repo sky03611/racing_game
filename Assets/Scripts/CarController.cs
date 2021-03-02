@@ -20,6 +20,9 @@ public class CarController : MonoBehaviour
     private float driveTypeInt;
     private CarEngine ce;
     private CarTransmission ct;
+    private int driveTypeDivider;
+
+    public float lerptester;
 
     internal enum driveType
     {
@@ -29,8 +32,10 @@ public class CarController : MonoBehaviour
     };
     [SerializeField]
     private driveType wheelDrive = driveType.awd;
-    void Start()
+    public void Initialize()
     {
+        WheelDriveType();
+        
         ct = GetComponent<CarTransmission>();
         rearTrack = rearTrack / 2;
         //WheelDriveType();
@@ -45,34 +50,31 @@ public class CarController : MonoBehaviour
         ce = GetComponent<CarEngine>();
     }
 
-   // private void WheelDriveType()
-   // {
-   //     if (wheelDrive == driveType.awd)
-   //     {
-   //         for (int i = 0; i < rayCastWheels.Length; i++)
-   //         {
-   //             rayCastWheels[i].SetDriveType();
-   //             ct.DriveTypeForce(1f);
-   //         }
-   //     }
-   //     else if (wheelDrive == driveType.fwd)
-   //     {
-   //         for (int i = 0; i < rayCastWheels.Length - 2; i++)
-   //         {
-   //             rayCastWheels[i].SetDriveType();
-   //             ct.DriveTypeForce(1f);
-   //         }
-   //     }
-   //
-   //     else if (wheelDrive == driveType.rwd)
-   //     {
-   //         for (int i = 2; i < rayCastWheels.Length; i++)
-   //         {
-   //             rayCastWheels[i].SetDriveType();
-   //             ct.DriveTypeForce(1f);
-   //         }
-   //     }
-   // }
+    private void WheelDriveType()
+    {
+        if (wheelDrive == driveType.awd)
+        {
+            driveTypeDivider = 4;
+        }
+        if (wheelDrive == driveType.fwd)
+        {
+            driveTypeDivider = 2;
+        }
+        if(wheelDrive == driveType.rwd)
+        {
+            driveTypeDivider = 4;
+        }
+    }
+
+    public void SteerFactorChanger()
+    {
+        steerFactor = Mathf.Lerp(2f, 0.3f, rb.velocity.magnitude/22);
+        Debug.Log("SteerFactor= " + steerFactor);
+    }
+    public int GetDriveTypeDivider()
+    {
+        return driveTypeDivider;
+    }
 
     public float DriveTypeInt()
     {

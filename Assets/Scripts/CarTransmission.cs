@@ -18,11 +18,13 @@ public class CarTransmission : MonoBehaviour
     private CarEngine ce;
     float fu;
     float deltaTime;
+    int driveTorqueDivider;
 
     // Start is called before the first frame update
-    public void Initialize()
+    public void Initialize(int driveType)
     {
         ce = GetComponent<CarEngine>();
+        driveTorqueDivider = driveType;
         inGear = true;
         nextGear = 1;
         currentGear = 1;
@@ -40,8 +42,10 @@ public class CarTransmission : MonoBehaviour
     {
         currentGearRatio = gearRatios[currentGear] *mainGear;
         gearDisplay = gearDisplayDictionary[currentGear];
-        Debug.Log(currentGear);
+
     }
+
+
     public void PhysicsUpdate(float delta)
     {
         deltaTime = delta;
@@ -62,7 +66,7 @@ public class CarTransmission : MonoBehaviour
         fu = 0;
         if (currentGearRatio != 0)
         {
-            return ce.GetEngineTorque() * currentGearRatio;
+            return ce.GetEngineTorque() * currentGearRatio/driveTorqueDivider;
         }
         else
         {

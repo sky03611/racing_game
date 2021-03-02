@@ -62,7 +62,17 @@ public class CarEngine : MonoBehaviour
         torquePower = Mathf.Lerp(backTorque, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
         engineAngularAcc = torquePower / inertia;
         engineAngularVelocity += engineAngularAcc * delta;
-        engineAngularVelocity = Mathf.Clamp(((averageWheelSpeed * ct.GetTotalGearRatio()- engineAngularVelocity) * clutch) + engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec) ;
+        if (ct.GetCurrentGear() != 1)
+        {
+            engineAngularVelocity = Mathf.Clamp(((averageWheelSpeed * ct.GetTotalGearRatio() - engineAngularVelocity) * clutch) + engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
+        }
+        else
+        {
+            torquePower = Mathf.Lerp(backTorque*5, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
+            engineAngularAcc = torquePower / inertia;
+            engineAngularVelocity += engineAngularAcc * delta;
+            engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
+        }
         //engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineRpm = engineAngularVelocity*radsSecToRpm;
         ca.SetEngingeRpm(engineRpm);
