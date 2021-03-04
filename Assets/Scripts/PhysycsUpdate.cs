@@ -8,7 +8,7 @@ public class PhysycsUpdate : MonoBehaviour
     private CarEngine ce;
     private CarTransmission ct;
     private CarController cc;
-    private AntiRollBar arb;
+    private Breaks breaks;
     private Dashboard db;
 
     float throttle;
@@ -18,14 +18,14 @@ public class PhysycsUpdate : MonoBehaviour
         ce = GetComponent<CarEngine>();
         ct = GetComponent<CarTransmission>();
         cc = GetComponent<CarController>();
-        arb = GetComponent<AntiRollBar>();
         db = GetComponent<Dashboard>();
+        breaks = GetComponent<Breaks>();
         cc.Initialize();
         ct.Initialize(cc.GetDriveTypeDivider());
         ce.Initialize();
-        arb.Initialize();
+        breaks.Initialize();
+        AudioListener.volume = 0.1f;
        
-        
     }
 
     void Update()
@@ -36,11 +36,12 @@ public class PhysycsUpdate : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        throttle = Input.GetAxisRaw("Vertical");
+
+            breaks.PhysicsUpdate(delta, throttle);
         delta = Time.fixedDeltaTime;
-        throttle = Input.GetAxis("Vertical");
         
-        ce.TestTorque();
-        cc.SteerFactorChanger();
+        ce.AverageWheelSpeed();
         ce.UpdatePhysics(delta, throttle);
         ct.PhysicsUpdate(delta);
         db.PhysicsUpdate();
@@ -78,7 +79,9 @@ public class PhysycsUpdate : MonoBehaviour
                 cc.rayCastWheels[i].PhysicsUpdate(delta, 0f);
             }
         }
-        //arb.PhysicsUpdate();
+        cc.SteerFactorChanger();
+        
+        
 
 
     }

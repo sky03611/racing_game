@@ -6,6 +6,8 @@ using UnityEngine;
 public class CarController : MonoBehaviour
 {
     public Vector3 centerOfMass;
+    public AnimationCurve steerFactorCurve;
+    public AnimationCurve backSteerFactorCurve;
     private Rigidbody rb;
     public float steeringAngle;
     private float steerInputs;
@@ -35,12 +37,9 @@ public class CarController : MonoBehaviour
     public void Initialize()
     {
         WheelDriveType();
-        
         ct = GetComponent<CarTransmission>();
         rearTrack = rearTrack / 2;
-        //WheelDriveType();
         CenterOfMassCorrector();
-
     }
 
     private void CenterOfMassCorrector()
@@ -62,14 +61,13 @@ public class CarController : MonoBehaviour
         }
         if(wheelDrive == driveType.rwd)
         {
-            driveTypeDivider = 4;
+            driveTypeDivider = 2;
         }
     }
 
     public void SteerFactorChanger()
     {
-        steerFactor = Mathf.Lerp(2f, 0.3f, rb.velocity.magnitude/22);
-        Debug.Log("SteerFactor= " + steerFactor);
+        steerFactor = steerFactorCurve.Evaluate(rb.velocity.magnitude*3.6f); //todo Evaluate+steerBackTime 
     }
     public int GetDriveTypeDivider()
     {
@@ -98,16 +96,16 @@ public class CarController : MonoBehaviour
     void Update()
     {
         
-        steerInputs = Input.GetAxis("Horizontal");
+        steerInputs = Input.GetAxisRaw("Horizontal");
         if (Input.GetAxis("Horizontal") > 0)
         {
-            ackermannAngleLeft = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack)) * Input.GetAxis("Horizontal") * steerFactor;
-            ackermannAngleRight = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack)) * Input.GetAxis("Horizontal") * steerFactor;
+            ackermannAngleLeft = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack)) * steerInputs * steerFactor;
+            ackermannAngleRight = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack)) * steerInputs * steerFactor;
         }
         else if (Input.GetAxis("Horizontal") < 0)
         {
-            ackermannAngleLeft = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack)) * Input.GetAxis("Horizontal") * steerFactor;
-            ackermannAngleRight = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack)) * Input.GetAxis("Horizontal") * steerFactor;
+            ackermannAngleLeft = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack)) * steerInputs * steerFactor;
+            ackermannAngleRight = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack)) * steerInputs * steerFactor;
         }
         else
         {

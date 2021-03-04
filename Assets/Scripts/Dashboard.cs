@@ -31,7 +31,6 @@ public class Dashboard : MonoBehaviour
         engineRpm = ce.GetEngineRPM();
         
     }
-
     public void SetEngineMaxRpm(float maxRpm)
     {
         engineMaxRpm = ce.engineMaxRpm;
