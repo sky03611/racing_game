@@ -56,6 +56,7 @@ public class RayCastWheel : MonoBehaviour
     private float deltaTime;
     private float driveTorque;
     private float breakVelocity = 1f;
+    public float skidSoundVectorNorm;
     [HideInInspector]
     public RaycastHit hit;
 
@@ -82,6 +83,14 @@ public class RayCastWheel : MonoBehaviour
             AddTireForce();
         }
         WheelRolling();
+        ApplySkidSound();
+    }
+
+    private void ApplySkidSound()
+    {
+        Vector2 skidVector = new Vector2(longSlipVelocity, wheelVelocityLS.x);
+        skidSoundVectorNorm = skidVector.magnitude;
+
     }
 
     private void RaycastSingle()
@@ -126,7 +135,7 @@ public class RayCastWheel : MonoBehaviour
         wheelInertia = Mathf.Pow(wheelRadius, 2) * wheelMass * 0.5f;
         frictionTorque = (Mathf.Max(0, forceZ) * wheelRadius * Mathf.Clamp(longSlipVelocity / -strangeFactor, -1, 1)) / wheelInertia*deltaTime;
         var wheelAngularAcceleration = driveTorque / wheelInertia *deltaTime;
-        Debug.Log(wheelAngularAcceleration);
+
         wheelAngularVelocity = Mathf.Sign(maxWheelSpeed)* Mathf.Min(Mathf.Abs(wheelAngularVelocity += wheelAngularAcceleration), Mathf.Abs(maxWheelSpeed));
         wheelAngularVelocity = wheelAngularVelocity + frictionTorque +breakVelocity;
         if (ct.GetTotalGearRatio() != 0)
@@ -176,7 +185,7 @@ public class RayCastWheel : MonoBehaviour
             }
             else
             {
-                forceY = tireForceNormalized.y * Mathf.Max(0.0f, 3000) * frictionCoefficientY;
+                forceY = tireForceNormalized.y * Mathf.Max(0.0f, forceZ) * frictionCoefficientY;
             }
         }
     }

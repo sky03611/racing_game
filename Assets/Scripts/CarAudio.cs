@@ -36,11 +36,13 @@ public class CarAudio : MonoBehaviour
     public AudioSource Audio14;
     public AudioSource Audio15;
     public AudioSource Audio16;
+    public AudioSource skidSound;
     private float engineRpm;
+    private CarController cc;
 
     void Start()
     {
-       
+        cc = GetComponent<CarController>();
 
         //Get 16x Audio Source
         Audio1 = Audio1.GetComponent<AudioSource>();
@@ -59,6 +61,8 @@ public class CarAudio : MonoBehaviour
         Audio14 = Audio14.GetComponent<AudioSource>();
         Audio15 = Audio15.GetComponent<AudioSource>();
         Audio16 = Audio16.GetComponent<AudioSource>();
+        skidSound = skidSound.GetComponent<AudioSource>();
+
 
         //Play Audio's
         Audio1.Play();
@@ -77,6 +81,7 @@ public class CarAudio : MonoBehaviour
         Audio14.Play();
         Audio15.Play();
         Audio16.Play();
+        skidSound.Play();
     }
 
     public void SetEngingeRpm(float rpm)
@@ -86,6 +91,15 @@ public class CarAudio : MonoBehaviour
 
     void Update()
     {
+        if (cc.rayCastWheels[0].skidSoundVectorNorm > 0)
+        {
+            for (int i = 0; i < cc.rayCastWheels.Length; i++)
+            {
+                Debug.Log("Skid " + cc.rayCastWheels[0].skidSoundVectorNorm);
+                skidSound.volume = cc.rayCastWheels[i].skidSoundVectorNorm / 10;
+            }
+
+        }
         //Set Volume By Rpm's
         for (int i = 0; i < 16; i++)
         {

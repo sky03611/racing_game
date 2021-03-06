@@ -17,13 +17,18 @@ public class CarEngine : MonoBehaviour
     private float radsSecToRpm;
     private float engineAngularAcc;
     public float clutch;
+    public bool clutchEng;
     private float averageWheelSpeed;
 
     private CarAudio ca;
     private CarTransmission ct;
     private CarController cc;
     private Rigidbody rb;
-
+    
+    void Update()
+    {
+        AutoClutch();
+    }
     public void Initialize()
     {
         ct = GetComponent<CarTransmission>();
@@ -55,13 +60,22 @@ public class CarEngine : MonoBehaviour
         //engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineRpm = engineAngularVelocity * radsSecToRpm;
         ca.SetEngingeRpm(engineRpm);
-        AutoClutch();
+        
     }
 
     public void AutoClutch()
     {
-        float speedForward = Mathf.Abs(Vector3.Dot(rb.velocity, rb.transform.forward));
-        clutch = Mathf.Lerp(0.1f, 0.6f, speedForward/10);
+        if (Input.GetKey(KeyCode.X))
+        {
+            clutchEng = true;
+            clutch = 0.000001f;
+        }
+        else
+        {
+            clutchEng = false;
+            float speedForward = Mathf.Abs(Vector3.Dot(rb.velocity, rb.transform.forward));
+            clutch = Mathf.Lerp(0.1f, 0.6f, speedForward / 10); 
+        }
     }
 
     public void AverageWheelSpeed()

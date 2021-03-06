@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Thirdparty/Map/Scenes/Sprint Track.unity
+    guid: 46478303f7c601e4e8584cb7f8d31d7f
   m_configObjects: {}

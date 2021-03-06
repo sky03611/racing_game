@@ -10,11 +10,16 @@ public class PhysycsUpdate : MonoBehaviour
     private CarController cc;
     private Breaks breaks;
     private Dashboard db;
+    private NewRayCast[] nrc = new NewRayCast[4];
 
     float throttle;
     
     void Start()
     {
+        for (int i = 0; i < nrc.Length; i++)
+        {
+            nrc[i] = GetComponent<NewRayCast>();
+        }
         ce = GetComponent<CarEngine>();
         ct = GetComponent<CarTransmission>();
         cc = GetComponent<CarController>();

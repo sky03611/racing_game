@@ -61,12 +61,12 @@ public class CarTransmission : MonoBehaviour
     {
         if (zf6HP19)
         {
-            if (ce.GetEngineRPM() > 6900 &&currentGear!=6)
+            if (ce.GetEngineRPM() > 6900 &&currentGear!=6 && !ce.clutchEng)
             {
                     Debug.Log("GearUp");
                 currentGear++;
             }
-            if (ce.GetEngineRPM() < 3500 && currentGear>2)
+            if (ce.GetEngineRPM() < 3500 && currentGear>2 && !ce.clutchEng)
             {
                 currentGear--;
                 Debug.Log("GearDown");

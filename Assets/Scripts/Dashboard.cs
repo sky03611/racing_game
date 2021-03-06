@@ -14,8 +14,11 @@ public class Dashboard : MonoBehaviour
     private float tachoAngle;
     private float speedoAngle;
     private const float zeroTachoAngle = 135;
-    private const float maxTachoAngle = -116; //-131
+    private const float maxTachoAngle = -75; //-131
+    private const float zeroSpeedoAngle = 135;
+    private const float maxSpeedoAngle = -135; //-131
     public Transform tachoNeedle;
+    public Transform speedoNeedle;
     public Text speedo;
     public Text currentGear;
     void Start()
@@ -71,5 +74,9 @@ public class Dashboard : MonoBehaviour
     public void Speedo()
     {
         speedo.text = Mathf.Round(rb.velocity.magnitude * 3.6f).ToString();
+        float totalAngleSizeSpd = zeroSpeedoAngle - maxSpeedoAngle;
+        float spdNormalized = Mathf.Round(rb.velocity.magnitude * 3.6f) / 260;//maxspd
+        speedoAngle = zeroSpeedoAngle - spdNormalized * totalAngleSizeSpd;
+        speedoNeedle.eulerAngles = new Vector3(0, 0, speedoAngle);
     }
 }
