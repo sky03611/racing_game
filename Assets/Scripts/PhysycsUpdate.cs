@@ -42,7 +42,7 @@ public class PhysycsUpdate : MonoBehaviour
     void FixedUpdate()
     {
         throttle = Input.GetAxisRaw("Vertical");
-
+      
             breaks.PhysicsUpdate(delta, throttle);
         delta = Time.fixedDeltaTime;
         
@@ -70,7 +70,7 @@ public class PhysycsUpdate : MonoBehaviour
                 cc.rayCastWheels[i].PhysicsUpdate(delta, 0f);
             }
         }
-    
+      
         //rwd
         if (cc.DriveTypeInt() == 2)
         {
@@ -78,7 +78,7 @@ public class PhysycsUpdate : MonoBehaviour
             {
                 cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
             }
-
+      
             for (int i = 0; i < cc.rayCastWheels.Length-2; i++)
             {
                 cc.rayCastWheels[i].PhysicsUpdate(delta, 0f);

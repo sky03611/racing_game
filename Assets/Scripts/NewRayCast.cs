@@ -9,6 +9,9 @@ public class NewRayCast : MonoBehaviour
     private float driveTorque;
     public bool isGrounded;
 
+    public bool wheelFR;
+    public bool wheelFL;
+
     public float wheelMass;
 
     public float restLength;
@@ -44,7 +47,7 @@ public class NewRayCast : MonoBehaviour
     public float slopeGrade;
 
     public float fX;
-    public float fY;
+    //public float fY;
 
     private float wheelInertia;
     private float wheelAngularAcceleration;
@@ -57,6 +60,9 @@ public class NewRayCast : MonoBehaviour
     private float frictionTorque;
     private float totalTorque;
 
+    private float steerAngle;
+    private float wheelAngle;
+
     // Start is called before the first frame update
     public void Initialize()
     {
@@ -67,13 +73,23 @@ public class NewRayCast : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void UpdatePhysics(float _deltaTime, float _driveTorque)
+    public void UpdatePhysics(float _deltaTime, float _driveTorque, float turnAngleL, float turnAngleR)
     {
+        if (wheelFL)
+        {
+            steerAngle = turnAngleL;
+        }
+        if (wheelFR)
+        {
+            steerAngle = turnAngleR;
+        }
+            
+
         deltaTime = _deltaTime;
         driveTorque = _driveTorque;
-
+        Steering();
         RaycastSingle();
-
+        
         if (isGrounded)
         {
             GetSuspensionForce();
@@ -193,4 +209,10 @@ public class NewRayCast : MonoBehaviour
         rb.AddForceAtPosition(combinedForceVectorNormalized, transform.position - (transform.up * currentLength));
     }
 
+    void Steering()
+    {
+        wheelAngle = Mathf.Lerp(wheelAngle, steerAngle, deltaTime * 2);
+        transform.localRotation = Quaternion.Euler(Vector3.up * wheelAngle);
+    }
+   
 }
