@@ -9,6 +9,8 @@ public class NewRayCast : MonoBehaviour
     private float driveTorque;
     public bool isGrounded;
 
+    public Transform wheelMesh;
+
     public bool wheelFR;
     public bool wheelFL;
 
@@ -63,6 +65,9 @@ public class NewRayCast : MonoBehaviour
     private float steerAngle;
     private float wheelAngle;
 
+    private float currentGearRatio;
+    private float engineAngularVelocity;
+
     // Start is called before the first frame update
     public void Initialize()
     {
@@ -73,7 +78,7 @@ public class NewRayCast : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void UpdatePhysics(float _deltaTime, float _driveTorque, float turnAngleL, float turnAngleR)
+    public void UpdatePhysics(float _deltaTime, float _driveTorque, float turnAngleL, float turnAngleR, float ratio, float engineVelocity)
     {
         if (wheelFL)
         {
@@ -83,13 +88,17 @@ public class NewRayCast : MonoBehaviour
         {
             steerAngle = turnAngleR;
         }
-            
 
+        
         deltaTime = _deltaTime;
         driveTorque = _driveTorque;
+        currentGearRatio = ratio;
+        engineAngularVelocity = engineVelocity;
         Steering();
         RaycastSingle();
-        
+        WheelRolling();
+
+
         if (isGrounded)
         {
             GetSuspensionForce();
@@ -105,6 +114,8 @@ public class NewRayCast : MonoBehaviour
             ResetValues();
         }
     }
+
+
 
     void RaycastSingle()
     {
@@ -151,7 +162,8 @@ public class NewRayCast : MonoBehaviour
         totalTorque = driveTorque - frictionTorque;
         wheelAngularAcceleration = totalTorque / wheelInertia;
         wheelAngularVelocity += wheelAngularAcceleration * deltaTime;
-        wheelAngularVelocity = Mathf.Clamp(wheelAngularVelocity, -120, 120); //temp action
+        wheelAngularVelocity = Mathf.Clamp(wheelAngularVelocity, -engineAngularVelocity/currentGearRatio, engineAngularVelocity/currentGearRatio); //temp action
+        Debug.Log(driveTorque);
     }
 
     void GetSx()
@@ -214,5 +226,10 @@ public class NewRayCast : MonoBehaviour
         wheelAngle = Mathf.Lerp(wheelAngle, steerAngle, deltaTime * 2);
         transform.localRotation = Quaternion.Euler(Vector3.up * wheelAngle);
     }
-   
+
+    private void WheelRolling()
+    {
+        wheelMesh.transform.Rotate((wheelAngularVelocity * Mathf.Rad2Deg) * deltaTime, 0, 0, Space.Self);
+    }
+
 }

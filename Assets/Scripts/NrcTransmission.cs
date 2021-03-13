@@ -5,6 +5,7 @@ using UnityEngine;
 public class NrcTransmission : MonoBehaviour
 {
     [HideInInspector] public float currentGearRatio;
+    private NrcDashBoard nrcDashBoard;
     private bool inGear;
     public bool zf6HP19;
     public float[] gearRatios;
@@ -16,6 +17,7 @@ public class NrcTransmission : MonoBehaviour
 
     public void Initialize()
     {
+        nrcDashBoard = GetComponent<NrcDashBoard>();
         inGear = true;
         nextGear = 1;
         currentGear = 1;
@@ -24,6 +26,7 @@ public class NrcTransmission : MonoBehaviour
     public void PhysicsUpdate()
     {
         currentGearRatio = gearRatios[currentGear] * mainGear;
+        nrcDashBoard.CurrentGear(currentGear);
     }
 
    public void TransmissionTorque(float engineTorque)
@@ -71,5 +74,6 @@ public class NrcTransmission : MonoBehaviour
         yield return new WaitForSeconds(shiftTime);
         currentGear = nextGear;
         inGear = true;
+        
     }
 }

@@ -6,10 +6,11 @@ public class NrcEngine : MonoBehaviour
 {
     public AnimationCurve engineTorqueCurve;
     private NrcTransmission nrcTransmission;
+    private NrcDashBoard nrcDashBoard;
     private float throttle;
     private float engineRpm;
     private float engineAngularAcc;
-    private float engineAngularVelocity;
+    public float engineAngularVelocity;
     private float torquePower;
     private float rpmToRadsSec;
     private float radsSecToRpm;
@@ -23,6 +24,7 @@ public class NrcEngine : MonoBehaviour
     public void Initialize()
     {
         nrcTransmission = GetComponent<NrcTransmission>();
+        nrcDashBoard = GetComponent<NrcDashBoard>();
         rpmToRadsSec = Mathf.PI * 2 / 60;
         radsSecToRpm = 1 / rpmToRadsSec;
         engineRpm = engineIdleRpm; 
@@ -31,21 +33,22 @@ public class NrcEngine : MonoBehaviour
     // Update is called once per frame
     public void PhysicsUpdate(float throttleInput, float delta)
     {
+        EngineUpdate(throttleInput, delta);
+        nrcDashBoard.SetEngineRpm(engineRpm);
+        nrcDashBoard.SetEngineMaxRpm(engineMaxRpm);
+    }
+
+    private void EngineUpdate(float throttleInput, float delta)
+    {
         throttle = throttleInput;
         torquePower = Mathf.Lerp(backTorque, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
-        if (engineRpm == engineIdleRpm && torquePower<0)
-        {
-            torquePower = 0;
-        }
         engineAngularAcc = torquePower / inertia;
         engineAngularVelocity += engineAngularAcc * delta;
         //engineAngularVelocity = Mathf.Clamp(((Mathf.Abs(averageWheelSpeed) * ct.GetTotalGearRatio() - engineAngularVelocity) * clutch) + engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineRpm = engineAngularVelocity * radsSecToRpm;
-        Debug.Log("Torque= " + torquePower);
-        Debug.Log("Rpm= " + engineRpm);
-        nrcTransmission.TransmissionTorque(torquePower);
+
+        nrcTransmission.TransmissionTorque(Mathf.Clamp(torquePower,0,20000f));
     }
 
-    
 }

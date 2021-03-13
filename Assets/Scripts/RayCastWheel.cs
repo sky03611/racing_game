@@ -9,11 +9,16 @@ public class RayCastWheel : MonoBehaviour
     private CarController cc;
     private CarEngine ce;
     private CarTransmission ct;
-    public AnimationCurve slipForceCurve;
+    public AnimationCurve longSlipForceCurve;
+    public AnimationCurve lateralSlipForceCurve;
     public bool wheelFL;
     public bool wheelFR;
     public bool wheelRL;
     public bool wheelRR;
+
+    public float lateralStiffness;
+    public float longStiffness = 1f;
+    public float gripCoeff;
 
     public GameObject wheelMesh;
     public float springRestLength = 50f;
@@ -22,9 +27,11 @@ public class RayCastWheel : MonoBehaviour
     public float springTravel = 10f;
     public float currentLength;
 
+
+
     public float frictionCoefficientX;
     public float frictionCoefficientY;
-    public float longStiffness = 1f;
+
     public float cornerStiffness;
 
     public float wheelRadius = 34f;
@@ -57,6 +64,8 @@ public class RayCastWheel : MonoBehaviour
     private float driveTorque;
     private float breakVelocity = 1f;
     public float skidSoundVectorNorm;
+
+    private float kmhTester;
     [HideInInspector]
     public RaycastHit hit;
 
@@ -66,6 +75,10 @@ public class RayCastWheel : MonoBehaviour
         cc = transform.root.GetComponent<CarController>();
         rb = transform.root.GetComponent<Rigidbody>();
         ct = transform.root.GetComponent<CarTransmission>();
+    }
+    void Update()
+    {
+        KmPH();
     }
 
     public void PhysicsUpdate(float delta, float torque)
@@ -78,12 +91,17 @@ public class RayCastWheel : MonoBehaviour
             GetSuspensionForce();
             ApplySuspinsionForce();
             GetVelocityLocal();
+            
+            
             GetWheelSlipCombined();
             WheelAngularVelocity();
             AddTireForce();
         }
         WheelRolling();
         ApplySkidSound();
+
+        wheelAngle = Mathf.Lerp(wheelAngle, steerAngle, deltaTime * cc.steerBackTime);
+        transform.localRotation = Quaternion.Euler(Vector3.up * wheelAngle);
     }
 
     private void ApplySkidSound()
@@ -124,33 +142,17 @@ public class RayCastWheel : MonoBehaviour
         wheelVelocityLS = transform.InverseTransformDirection(rb.GetPointVelocity(hit.point));
     }
 
-    void Update()
-    {
-        wheelAngle = Mathf.Lerp(wheelAngle, steerAngle, deltaTime * cc.steerBackTime);
-        transform.localRotation = Quaternion.Euler(Vector3.up * wheelAngle);
-    }
    
     private void WheelAngularVelocity()
     {
         wheelInertia = Mathf.Pow(wheelRadius, 2) * wheelMass * 0.5f;
         frictionTorque = (Mathf.Max(0, forceZ) * wheelRadius * Mathf.Clamp(longSlipVelocity / -strangeFactor, -1, 1)) / wheelInertia*deltaTime;
-        var wheelAngularAcceleration = driveTorque / wheelInertia *deltaTime;
+        var wheelAngularAcceleration = driveTorque / wheelInertia;
+        wheelAngularVelocity += wheelAngularAcceleration * deltaTime +frictionTorque +breakVelocity;
+        //wheelAngularVelocity = Mathf.Clamp(wheelAngularVelocity, -120, 120); //temp action
+        wheelAngularVelocity = Mathf.Clamp(wheelAngularVelocity, -ce.EngineAngularVelocity() / ct.currentGearRatio, ce.EngineAngularVelocity() / ct.currentGearRatio); //temp action
 
-        wheelAngularVelocity = Mathf.Sign(maxWheelSpeed)* Mathf.Min(Mathf.Abs(wheelAngularVelocity += wheelAngularAcceleration), Mathf.Abs(maxWheelSpeed));
-        wheelAngularVelocity = wheelAngularVelocity + frictionTorque +breakVelocity;
-        if (ct.GetTotalGearRatio() != 0)
-        {
-            maxWheelSpeed = ce.EngineAngularVelocity() / ct.GetTotalGearRatio();
-        }
-        else
-        {
-            maxWheelSpeed = 100;
-        }
-        //Костыль
-        if (rb.velocity.magnitude * 3.6 <= 0.2f && wheelAngularAcceleration<=0)
-        {
-            wheelAngularVelocity = 0;
-        }
+
     }  
 
     private void WheelRolling()
@@ -163,36 +165,42 @@ public class RayCastWheel : MonoBehaviour
     {
         if (isGrounded)
         {
-            lateralSlipNormalized = Mathf.Clamp(wheelVelocityLS.x * cornerStiffness*-1, -1, 1);
-            longSlipVelocity = wheelAngularVelocity * wheelRadius - wheelVelocityLS.z;
+            longSlipVelocity = (wheelAngularVelocity * wheelRadius) - wheelVelocityLS.z;
+            var lateralForceVector = lateralSlipForceCurve.Evaluate(wheelVelocityLS.x) * lateralStiffness;
+            var longForceVector = longSlipForceCurve.Evaluate(wheelVelocityLS.z)* longStiffness * longSlipVelocity;
+            var longLateralVectorsMagn = new Vector2(longForceVector, lateralForceVector).magnitude;
+            var longLateralVectorsNorm = new Vector2(longForceVector, lateralForceVector).normalized;
+            Vector2 multiVector = longLateralVectorsMagn * longLateralVectorsNorm;
+            var maxFriction = forceZ * gripCoeff;
 
-            if (wheelVelocityLS.z * longSlipVelocity > 0)
-            {
-                longSlipNormalized = Mathf.Clamp(driveTorque / wheelRadius / Mathf.Max(0.00001f, forceZ), -2, 2);
-            }
-            else
-            {
-                longSlipNormalized = Mathf.Clamp(longSlipVelocity * longStiffness, -1, 1);
-            }
-            Vector2 lateralLongVector = new Vector2(longSlipNormalized,lateralSlipNormalized);
-            longLateralVector = lateralLongVector;
-            var combinedSlip = lateralLongVector.magnitude;
-            Vector2 tireForceNormalized = slipForceCurve.Evaluate(combinedSlip) * longLateralVector.normalized;
-            forceX = tireForceNormalized.x * Mathf.Max(0.0f, forceZ) * frictionCoefficientX;
-            if (wheelFL || wheelFR)
-            {
-                forceY = tireForceNormalized.y * Mathf.Max(0.0f, 3000) * frictionCoefficientY;
-            }
-            else
-            {
-                forceY = tireForceNormalized.y * Mathf.Max(0.0f, forceZ) * frictionCoefficientY;
-            }
+            forceX = Mathf.Clamp(multiVector.x, -2, 2) * Mathf.Max(maxFriction,0);
+            forceY = Mathf.Clamp(multiVector.y, -2, 2) * Mathf.Max(maxFriction,0);
         }
     }
 
     private void AddTireForce()
     {
-        rb.AddForceAtPosition(forceX * transform.forward + forceY * transform.right, hit.point);
+        rb.AddForceAtPosition(forceX * transform.forward + forceY * -transform.right, hit.point);
+        
+    }
+
+    private void KmPH()
+    {
+        Debug.Log(driveTorque);
+       if(Input.GetKeyDown(KeyCode.B))
+        {
+            StartCoroutine(kmph());
+        }
+    }
+
+    IEnumerator kmph()
+    {
+       while(rb.velocity.magnitude *3.6 < 100)
+        {
+            kmhTester = kmhTester+ 0.1f;
+            yield return new WaitForSeconds(0.1f);
+        }
+        Debug.Log(kmhTester);
     }
     
     public float GetWheelAngularVelocity()

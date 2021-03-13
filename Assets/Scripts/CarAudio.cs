@@ -95,7 +95,6 @@ public class CarAudio : MonoBehaviour
         {
             for (int i = 0; i < cc.rayCastWheels.Length; i++)
             {
-                Debug.Log("Skid " + cc.rayCastWheels[0].skidSoundVectorNorm);
                 skidSound.volume = cc.rayCastWheels[i].skidSoundVectorNorm / 10;
             }
 

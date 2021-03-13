@@ -47,6 +47,7 @@ public class CarController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = centerOfMass;
         ce = GetComponent<CarEngine>();
+        
     }
 
     private void WheelDriveType()
@@ -95,7 +96,7 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        Physics.gravity = new Vector3(0, lerptester, 0);
         steerInputs = Input.GetAxisRaw("Horizontal");
         if (Input.GetAxis("Horizontal") > 0)
         {

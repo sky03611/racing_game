@@ -55,7 +55,7 @@ public class PhysycsUpdate : MonoBehaviour
         {
             for (int i = 0; i < cc.rayCastWheels.Length; i++)
             {
-                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
+                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque()/4);
             }
         }
         //fwd
@@ -63,7 +63,7 @@ public class PhysycsUpdate : MonoBehaviour
         {
             for (int i = 0; i < cc.rayCastWheels.Length-2; i++)
             {
-                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
+                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque()/2);
             }
             for (int i = 2; i < cc.rayCastWheels.Length; i++)
             {
@@ -76,7 +76,7 @@ public class PhysycsUpdate : MonoBehaviour
         {
             for (int i = 2; i < cc.rayCastWheels.Length ; i++)
             {
-                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque());
+                cc.rayCastWheels[i].PhysicsUpdate(delta, ct.GetTransmissionTorque()/2);
             }
       
             for (int i = 0; i < cc.rayCastWheels.Length-2; i++)

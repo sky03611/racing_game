@@ -42,6 +42,10 @@ public class CarEngine : MonoBehaviour
 
     public void UpdatePhysics(float delta, float var)
     {
+        if (engineRpm <= engineIdleRpm)
+        {
+            backTorque = 0;
+        }
         throttle = var;
         torquePower = Mathf.Lerp(backTorque, engineTorqueCurve.Evaluate(engineRpm) * throttle, throttle);
         engineAngularAcc = torquePower / inertia;
@@ -60,7 +64,6 @@ public class CarEngine : MonoBehaviour
         //engineAngularVelocity = Mathf.Clamp(engineAngularVelocity, engineIdleRpm * rpmToRadsSec, engineMaxRpm * rpmToRadsSec);
         engineRpm = engineAngularVelocity * radsSecToRpm;
         ca.SetEngingeRpm(engineRpm);
-        
     }
 
     public void AutoClutch()
