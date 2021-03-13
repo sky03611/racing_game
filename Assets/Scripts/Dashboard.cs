@@ -73,7 +73,6 @@ public class Dashboard : MonoBehaviour
 
     public void Speedo()
     {
-        speedo.text = Mathf.Round(rb.velocity.magnitude * 3.6f).ToString();
         float totalAngleSizeSpd = zeroSpeedoAngle - maxSpeedoAngle;
         float spdNormalized = Mathf.Round(rb.velocity.magnitude * 3.6f) / 260;//maxspd
         speedoAngle = zeroSpeedoAngle - spdNormalized * totalAngleSizeSpd;
