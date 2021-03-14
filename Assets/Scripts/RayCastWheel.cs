@@ -163,6 +163,7 @@ public class RayCastWheel : MonoBehaviour
 
     private void GetWheelSlipCombined()
     {
+        
         if (isGrounded)
         {
             longSlipVelocity = (wheelAngularVelocity * wheelRadius) - wheelVelocityLS.z;
@@ -175,6 +176,11 @@ public class RayCastWheel : MonoBehaviour
 
             forceX = Mathf.Clamp(multiVector.x, -2, 2) * Mathf.Max(maxFriction,0);
             forceY = Mathf.Clamp(multiVector.y, -2, 2) * Mathf.Max(maxFriction,0);
+            if (wheelFL || wheelFR)
+            {
+                Debug.Log(lateralForceVector);
+                Debug.Log("Evaluation = "+wheelVelocityLS.x);
+            }
         }
     }
 
@@ -186,7 +192,7 @@ public class RayCastWheel : MonoBehaviour
 
     private void KmPH()
     {
-        Debug.Log(driveTorque);
+
        if(Input.GetKeyDown(KeyCode.B))
         {
             StartCoroutine(kmph());
