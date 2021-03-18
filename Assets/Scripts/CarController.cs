@@ -7,11 +7,11 @@ public class CarController : MonoBehaviour
 {
     public Vector3 centerOfMass;
     public AnimationCurve steerFactorCurve;
-    public AnimationCurve backSteerFactorCurve;
     private Rigidbody rb;
     public float steeringAngle;
     private float steerInputs;
-    public RayCastWheel[] rayCastWheels;
+    private CarGlobalSettings carGlobalSettings;
+    private RayCastWheel[] wheelsArray = new RayCastWheel[4];
     public float wheelBase;
     public float turnRadius;
     public float rearTrack;
@@ -20,11 +20,7 @@ public class CarController : MonoBehaviour
     private float ackermannAngleLeft;
     private float ackermannAngleRight;
     private float driveTypeInt;
-    private CarEngine ce;
-    private CarTransmission ct;
     private int driveTypeDivider;
-
-    public float lerptester;
 
     internal enum driveType
     {
@@ -36,17 +32,21 @@ public class CarController : MonoBehaviour
     private driveType wheelDrive = driveType.awd;
     public void Initialize()
     {
-        WheelDriveType();
-        ct = GetComponent<CarTransmission>();
         rearTrack = rearTrack / 2;
+        carGlobalSettings = GetComponent<CarGlobalSettings>();
+        for (int i = 0; i < wheelsArray.Length; i++)
+        {
+            wheelsArray[i] = carGlobalSettings.wheels[i];
+        }
+        rb = GetComponent<Rigidbody>();
+        WheelDriveType();
         CenterOfMassCorrector();
     }
 
     private void CenterOfMassCorrector()
     {
-        rb = GetComponent<Rigidbody>();
+        carGlobalSettings = GetComponent<CarGlobalSettings>();
         rb.centerOfMass = centerOfMass;
-        ce = GetComponent<CarEngine>();
         
     }
 
@@ -94,16 +94,15 @@ public class CarController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void PhysicsUpdate(float steerInputData)
     {
-        Physics.gravity = new Vector3(0, lerptester, 0);
-        steerInputs = Input.GetAxisRaw("Horizontal");
-        if (Input.GetAxis("Horizontal") > 0)
+        steerInputs = steerInputData;
+        if (steerInputs > 0)
         {
             ackermannAngleLeft = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack)) * steerInputs * steerFactor;
             ackermannAngleRight = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack)) * steerInputs * steerFactor;
         }
-        else if (Input.GetAxis("Horizontal") < 0)
+        else if (steerInputs < 0)
         {
             ackermannAngleLeft = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack)) * steerInputs * steerFactor;
             ackermannAngleRight = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack)) * steerInputs * steerFactor;
@@ -115,7 +114,7 @@ public class CarController : MonoBehaviour
         }
         
 
-        foreach (RayCastWheel wheel in rayCastWheels)
+        foreach (RayCastWheel wheel in wheelsArray)
         {
             if (wheel.wheelFL)
                 wheel.steerAngle = ackermannAngleLeft;

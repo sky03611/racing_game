@@ -6,44 +6,31 @@ using UnityEngine.UI;
 
 public class Dashboard : MonoBehaviour
 {
-    private CarEngine ce;
-    private CarTransmission ct;
     private Rigidbody rb;
     private float engineRpm;
     private float engineMaxRpm;
     private float tachoAngle;
     private float speedoAngle;
     private const float zeroTachoAngle = 135;
-    private const float maxTachoAngle = -75; //-131
+    private const float maxTachoAngle = -89.9f; //-131
     private const float zeroSpeedoAngle = 135;
     private const float maxSpeedoAngle = -135; //-131
     public Transform tachoNeedle;
     public Transform speedoNeedle;
     public Text speedo;
     public Text currentGear;
-    void Start()
+    public void Initialize(float maxRpm)
     {
-        ce = GetComponent<CarEngine>();
-        ct = GetComponent<CarTransmission>();
         rb = GetComponent<Rigidbody>();
-        engineMaxRpm = ce.engineMaxRpm;
+        engineMaxRpm = maxRpm;
     }
 
-    public void SetEngineRpm()
-    {
-        engineRpm = ce.GetEngineRPM();
-        
-    }
-    public void SetEngineMaxRpm(float maxRpm)
-    {
-        engineMaxRpm = ce.engineMaxRpm;
-    }
 
-    public void PhysicsUpdate()
+
+    public void PhysicsUpdate(float rpm)
     {
+        engineRpm = rpm;
         Tachometer();
-        SetEngineRpm();
-        CurrentGear(ct.GetCurrentGear()-1);
         Speedo();
     }
 

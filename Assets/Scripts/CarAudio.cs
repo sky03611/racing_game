@@ -91,14 +91,7 @@ public class CarAudio : MonoBehaviour
 
     void Update()
     {
-        if (cc.rayCastWheels[0].skidSoundVectorNorm > 0)
-        {
-            for (int i = 0; i < cc.rayCastWheels.Length; i++)
-            {
-                skidSound.volume = cc.rayCastWheels[i].skidSoundVectorNorm / 10;
-            }
-
-        }
+       
         //Set Volume By Rpm's
         for (int i = 0; i < 16; i++)
         {

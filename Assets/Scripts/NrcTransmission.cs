@@ -1,41 +1,53 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class NrcTransmission : MonoBehaviour
 {
-    [HideInInspector] public float currentGearRatio;
-    private NrcDashBoard nrcDashBoard;
     private bool inGear;
-    public bool zf6HP19;
-    public float[] gearRatios;
+    [HideInInspector]
+    public float currentGearRatio;
+    [HideInInspector]
+    public float inputShaftVelocity;
+    public float[] gearRatio;
     public float shiftTime;
-    public float transmissionTorque;
     private int currentGear;
     private int nextGear;
-    private float mainGear = 3.82f;
+
+    private float inputTorque;
+    public float outputTorque;
+
 
     public void Initialize()
     {
-        nrcDashBoard = GetComponent<NrcDashBoard>();
         inGear = true;
         nextGear = 1;
         currentGear = 1;
     }
 
-    public void PhysicsUpdate()
+    public void PhysicsUpdate(float clutchInputTorque)
     {
-        currentGearRatio = gearRatios[currentGear] * mainGear;
-        nrcDashBoard.CurrentGear(currentGear);
+        inputTorque = clutchInputTorque;
+        currentGearRatio = gearRatio[currentGear]; //TODO Revamp
+        GetOutputTorque();
     }
 
-   public void TransmissionTorque(float engineTorque)
+
+
+    private void GetOutputTorque()
     {
-        transmissionTorque = engineTorque * currentGearRatio;
+        outputTorque = inputTorque * gearRatio[currentGear];
     }
+
+    public void GetInputShaftVelocity(float inputVelocity)
+    {
+        inputShaftVelocity = inputVelocity * gearRatio[currentGear];
+    }
+
     public void GearUp()
     {
-        if (inGear && currentGear != gearRatios.Length - 1)
+        if (inGear && currentGear != 0 &&currentGear<gearRatio.Length)
         {
             if (currentGear != 1)
             {
