@@ -57,7 +57,7 @@ public class NrcClutch : MonoBehaviour
         {
             if (gearboxRatio != 0)
             {
-                clutchLock = MapRangeClamped(engineAngularVelocity * RadPS_To_RPM, 600, 900, 0, 1);
+                clutchLock = MapRangeClamped(engineAngularVelocity * RadPS_To_RPM, 300, 700, 0, 1);
             }
             else
             {

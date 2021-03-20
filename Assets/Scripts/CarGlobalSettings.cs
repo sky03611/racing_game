@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CarGlobalSettings : MonoBehaviour
 {
-    public RayCastWheel[] wheels;
+    public NrcRayCastWheel[] wheels;
     //wheels order is very important FL FR RL RR 
     void Awake()
     {

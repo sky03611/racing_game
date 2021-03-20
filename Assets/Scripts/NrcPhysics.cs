@@ -21,6 +21,7 @@ public class NrcPhysics : MonoBehaviour
 
     private float wrlVel;
     private float wrrVel;
+    private float clutch;
 
     void Start()
     {
@@ -31,6 +32,14 @@ public class NrcPhysics : MonoBehaviour
     void Update() //this is needed to get good controls over keys that change gears
     {
         Shifter();
+        if (Input.GetKey(KeyCode.X))
+        {
+            clutch = 1f;
+        }
+        else
+        {
+            clutch = 0f;
+        }
     }
 
     void FixedUpdate()
@@ -40,12 +49,12 @@ public class NrcPhysics : MonoBehaviour
         
         nrcTransmission.PhysicsUpdate(nrcClutch.clutchTorque);
         nrcDifferential.PhysicsUpdate(nrcTransmission.outputTorque);
+        //UpdateWheels(0f,0f,Input.GetAxis("Vertical") *500, Input.GetAxis("Vertical") *500);
         UpdateWheels(0f,0f,nrcDifferential.outputTorqueLeft,nrcDifferential.outputTorqueRight);
-        nrcDifferential.GetOutputShaftVelocity(wrlVel, wrrVel);
+        nrcDifferential.GeInputShaftVelocity(wrlVel, wrrVel);
         nrcTransmission.GetInputShaftVelocity(nrcDifferential.differentialVelocity);
-        nrcClutch.UpdatePhysics(nrcTransmission.inputShaftVelocity, nrcEngine.engineAngularVelocity, nrcTransmission.currentGearRatio, 1f);
-        loadToruqe = nrcClutch.clutchTorque;
-        nrcEngine.PhysicsUpdate(throttle, delta, loadToruqe);
+        nrcClutch.UpdatePhysics(nrcTransmission.inputShaftVelocity, nrcEngine.engineAngularVelocity, nrcTransmission.currentGearRatio, clutch);
+        nrcEngine.PhysicsUpdate(throttle, delta, nrcClutch.clutchTorque);
         
         
         dashboard.PhysicsUpdate(nrcEngine.engineRpm);
@@ -67,12 +76,17 @@ public class NrcPhysics : MonoBehaviour
 
     private void InitializeCarComponents()
     {
+        for (int i = 0; i < carGlobalSettings.wheels.Length; i++)
+        {
+            carGlobalSettings.wheels[i].Initialize();
+        }
         carController.Initialize();
         nrcEngine.Initialize(rpmToRads, radsToRpm);
         nrcClutch.Initialize(radsToRpm);
         nrcTransmission.Initialize();
         nrcDifferential.Initialize();
         dashboard.Initialize(nrcEngine.maxEngineRpm);
+
     }
      
     private void GetGlobalUpdatedParams()
@@ -84,11 +98,12 @@ public class NrcPhysics : MonoBehaviour
 
     private void UpdateWheels(float driveTorqueFL, float driveTorqueFR, float driveTorqueRL, float driveTorqueRR)
     {
-        wrlVel = carGlobalSettings.wheels[2].GetWheelAngularVelocity();
-        wrrVel = carGlobalSettings.wheels[3].GetWheelAngularVelocity();
+        wrlVel = carGlobalSettings.wheels[2].wheelAngularVelocity;
+        wrrVel = carGlobalSettings.wheels[3].wheelAngularVelocity;
         for (int i = 0; i < carGlobalSettings.wheels.Length; i++)
         {
-            carGlobalSettings.wheels[i].PhysicsUpdate(delta, driveTorqueFL, driveTorqueFR, driveTorqueRL, driveTorqueRR);
+            carGlobalSettings.wheels[i].PhysicsUpdate(delta,driveTorqueFL,driveTorqueFR,driveTorqueRL,driveTorqueRR);
+            //carGlobalSettings.wheels[i].PhysicsUpdate(delta, driveTorqueFL, driveTorqueFR, driveTorqueRL, driveTorqueRR);
         }
 
     }

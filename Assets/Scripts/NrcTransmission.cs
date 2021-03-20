@@ -47,7 +47,7 @@ public class NrcTransmission : MonoBehaviour
 
     public void GearUp()
     {
-        if (inGear && currentGear != 0 &&currentGear<gearRatio.Length)
+        if (inGear && currentGear != 0 &&currentGear<gearRatio.Length-1)
         {
             if (currentGear != 1)
             {

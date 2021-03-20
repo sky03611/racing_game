@@ -11,7 +11,7 @@ public class CarController : MonoBehaviour
     public float steeringAngle;
     private float steerInputs;
     private CarGlobalSettings carGlobalSettings;
-    private RayCastWheel[] wheelsArray = new RayCastWheel[4];
+    private NrcRayCastWheel[] wheelsArray = new NrcRayCastWheel[4];
     public float wheelBase;
     public float turnRadius;
     public float rearTrack;
@@ -114,7 +114,7 @@ public class CarController : MonoBehaviour
         }
         
 
-        foreach (RayCastWheel wheel in wheelsArray)
+        foreach (NrcRayCastWheel wheel in wheelsArray)
         {
             if (wheel.wheelFL)
                 wheel.steerAngle = ackermannAngleLeft;
