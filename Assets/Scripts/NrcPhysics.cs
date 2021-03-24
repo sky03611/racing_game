@@ -50,7 +50,7 @@ public class NrcPhysics : MonoBehaviour
         nrcTransmission.PhysicsUpdate(nrcClutch.clutchTorque);
         nrcDifferential.PhysicsUpdate(nrcTransmission.outputTorque);
         //UpdateWheels(0f,0f,Input.GetAxis("Vertical") *500, Input.GetAxis("Vertical") *500);
-        UpdateWheels(0f,0f,nrcDifferential.outputTorqueLeft,nrcDifferential.outputTorqueRight);
+        UpdateWheels(0.001f, 0.001f, nrcDifferential.outputTorqueLeft, nrcDifferential.outputTorqueRight);
         nrcDifferential.GeInputShaftVelocity(wrlVel, wrrVel);
         nrcTransmission.GetInputShaftVelocity(nrcDifferential.differentialVelocity);
         nrcClutch.UpdatePhysics(nrcTransmission.inputShaftVelocity, nrcEngine.engineAngularVelocity, nrcTransmission.currentGearRatio, clutch);
