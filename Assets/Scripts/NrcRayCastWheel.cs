@@ -154,7 +154,7 @@ public class NrcRayCastWheel : MonoBehaviour
 
     private void ApplySuspinsionForce()
     {
-       rb.AddForceAtPosition(fZ * transform.up, transform.position);
+       rb.AddForceAtPosition(fZ * transform.up, transform.position - (transform.up * currentLength));
     }
 
     private void WheelLinearVelocity()
