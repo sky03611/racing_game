@@ -28,7 +28,7 @@ public class NrcEngine : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void PhysicsUpdate(float throttleInput, float delta, float loadTorque)
+    public void PhysicsUpdate(float throttleInput, float delta, float loadTorque, float diffSpeed,float currRatio)
     {
         engineTorque = engineTorqueCurve.Evaluate(engineRpm);
         //friction

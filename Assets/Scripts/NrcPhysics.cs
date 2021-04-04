@@ -18,6 +18,7 @@ public class NrcPhysics : MonoBehaviour
     private float rpmToRads;
     private float radsToRpm;
     private float loadToruqe;
+    public float testThrottle;
 
     private float wrlVel;
     private float wrrVel;
@@ -47,14 +48,9 @@ public class NrcPhysics : MonoBehaviour
         GetGlobalUpdatedParams();
         carController.PhysicsUpdate(steering);
         
-        nrcTransmission.PhysicsUpdate(nrcClutch.clutchTorque);
-        nrcDifferential.PhysicsUpdate(nrcTransmission.outputTorque);
-        //UpdateWheels(0f,0f,Input.GetAxis("Vertical") *500, Input.GetAxis("Vertical") *500);
-        UpdateWheels(0.001f, 0.001f, nrcDifferential.outputTorqueLeft, nrcDifferential.outputTorqueRight);
-        nrcDifferential.GeInputShaftVelocity(wrlVel, wrrVel);
-        nrcTransmission.GetInputShaftVelocity(nrcDifferential.differentialVelocity);
-        nrcClutch.UpdatePhysics(nrcTransmission.inputShaftVelocity, nrcEngine.engineAngularVelocity, nrcTransmission.currentGearRatio, clutch);
-        nrcEngine.PhysicsUpdate(throttle, delta, nrcClutch.clutchTorque);
+        
+        UpdateWheels(0f,0f,Input.GetAxis("Vertical") *1000, Input.GetAxis("Vertical") *1000);
+        //UpdateWheels(0, 0, nrcDifferential.outputTorqueLeft, nrcDifferential.outputTorqueRight);
         
         
         dashboard.PhysicsUpdate(nrcEngine.engineRpm);
@@ -100,9 +96,11 @@ public class NrcPhysics : MonoBehaviour
     {
         wrlVel = carGlobalSettings.wheels[2].wheelAngularVelocity;
         wrrVel = carGlobalSettings.wheels[3].wheelAngularVelocity;
+        loadToruqe = 0f;
         for (int i = 0; i < carGlobalSettings.wheels.Length; i++)
         {
             carGlobalSettings.wheels[i].PhysicsUpdate(delta,driveTorqueFL,driveTorqueFR,driveTorqueRL,driveTorqueRR);
+            loadToruqe += carGlobalSettings.wheels[i].loadForce / 4;
             //carGlobalSettings.wheels[i].PhysicsUpdate(delta, driveTorqueFL, driveTorqueFR, driveTorqueRL, driveTorqueRR);
         }
 

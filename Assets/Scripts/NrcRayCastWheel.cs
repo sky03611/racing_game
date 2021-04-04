@@ -6,7 +6,8 @@ using UnityEngine;
 public class NrcRayCastWheel : MonoBehaviour
 {
     //physics
-    public AnimationCurve lateralPacejkaCurve;
+    public AnimationCurve longSlipCurve;
+    public AnimationCurve lateralSlipCurve;
     private float deltaTime;
     //compoents
     private Rigidbody rb;
@@ -33,16 +34,22 @@ public class NrcRayCastWheel : MonoBehaviour
     public float rollingResistanceCoefficient;
     public float longFrictionCoefficient = 1f;
     public float lateralFrictionCoefficient = 1f;
+    public float rollingResistanceTorque;
     [Range(0,100)]
     public float slopeGrade;
     public float slipAnglePeak = 8f;
     public Transform wheelMesh;
     private float wheelInertia;
-    [HideInInspector]
+    
     public float wheelAngularVelocity;
     private float wheelAcceleration;
     private Vector3 linearVelocityLocal;
+    private float longTransient;
+    private float brakeTorque = 0f;
+
     //Slip
+    public float lateralSlip=1f;
+    public float longSlip=1f;
     private float sX;
     private float sY;
     private float slideCoeff;
@@ -51,12 +58,14 @@ public class NrcRayCastWheel : MonoBehaviour
     private float fX;
     public float maxSlipAngle;
     private float slipRatio;
+    public float thresholdTurnoverRate = 0f;
     //test
-    private float transientMax;
+    private float tractionTorque;
     private float transientCoeff;
     private float transientSY;
     private float slipAngleNormalized;
-    private Vector3 totalForce;
+    public float loadForce;
+    Vector3 combindeFoceVectorNorm;
 
     private Vector3 w_prevPos;
     private float forwardVelocuty;
@@ -92,9 +101,11 @@ public class NrcRayCastWheel : MonoBehaviour
             GetSuspensionForce();
             ApplySuspinsionForce();
             WheelLinearVelocity();
-            WheelAcceleration();
+            
             GetSx();
-            GetSy();
+            //GetSy();
+            GetFy();
+            WheelAcceleration();
             UpdateWheelMesh();
             ApplyTireForce();
         }
@@ -114,17 +125,7 @@ public class NrcRayCastWheel : MonoBehaviour
 
     private void Steering()
     {
-
-        // 
-        // if (steerAngle > slipAngle)
-        // {
-        //     steerAngle = steerAngle - slipAngle;
-        // }
-        // if(wheelAngle < slipAngle)
-        // {
-        
         steerAngle = Mathf.Clamp(steerAngle - slipAngle * steerCoeff, -40, 40); // todo
-       // }
         if (wheelFL || wheelFR)
         {
             wheelAngle = Mathf.Lerp(wheelAngle, steerAngle, deltaTime * steerTime);
@@ -160,94 +161,101 @@ public class NrcRayCastWheel : MonoBehaviour
     private void WheelLinearVelocity()
     {
         linearVelocityLocal = transform.InverseTransformDirection(rb.GetPointVelocity(hit.point));
-        Vector3 velocity = (transform.position - w_prevPos) / Time.deltaTime;
-        w_prevPos = transform.position;
-        Vector3 forward = transform.forward;
-        Vector3 sideways = transform.right;
-        forwardVelocuty = Vector3.Dot(velocity, forward);
-        sidewaysVelocuty = Vector3.Dot(velocity, sideways);
-        if (wheelFL) { 
-
-            }
     }
     private void WheelAcceleration()
     {
-        var rollingResistanceTorque = fZ * (rollingResistanceCoefficient / 1000) * wheelAngularVelocity;
-        var frictionTorque = fX * wheelRadius;
-        var wheelResistanceForce = fZ*1*wheelRadius;
-        var totalTorque = driveTorque - (frictionTorque+rollingResistanceTorque);
+        float frictionTorque = sX * longFrictionCoefficient * wheelRadius * Mathf.Max(fZ, 0);
+        float frictionTorqueNegater = -frictionTorque * MapRangeClamped(Mathf.Abs(linearVelocityLocal.z), 0, 1, 1, 0);
+        float rollingResistanceTorqueNegater = -rollingResistanceTorque * MapRangeClamped(Mathf.Abs(linearVelocityLocal.z), 0, 1, 1, 0);
+        var totalTorque = driveTorque - (frictionTorque + rollingResistanceTorque + frictionTorqueNegater + rollingResistanceTorqueNegater);
         wheelAcceleration = totalTorque / wheelInertia;
-        wheelAngularVelocity += wheelAcceleration * deltaTime;
+        //var totalTorque = driveTorque - tractionTorque;
+        if (brakeTorque != 0)
+        {
+            wheelAngularVelocity -= Mathf.Min(Mathf.Abs(wheelAngularVelocity), ((brakeTorque * Mathf.Sign(wheelAngularVelocity)) / wheelInertia) * deltaTime);
+            //if (Mathf.Abs(linearVelocityLocal.z) <= 1)
+            //{
+            //    longTransient = frictionTorque * MapRangeClamped(Mathf.Abs(linearVelocityLocal.z), brakeTorqueTransientFactorCurve.Evaluate(brakeTorque), 1, 0, 1);
+            //}
+            //else
+            //{
+            //    longTransient = 0;
+            //}
+        }
+        else
+        {
+            wheelAngularVelocity += wheelAcceleration * deltaTime;
+            longTransient = 0;
+        }
+        //wheelAngularVelocity += wheelAcceleration * deltaTime;
     }
     private void GetSx()
     {
-        var targetAngularVelocity = forwardVelocuty / wheelRadius;
-        var targetAngularAcceleration = (wheelAngularVelocity - targetAngularVelocity) / deltaTime;
-        var targetFrictionTorque = targetAngularAcceleration * wheelInertia;
-        var maxFrictionTorque = fZ * wheelRadius ;
-        if (forwardVelocuty == 0)
+        //Sku Notes: 
+        //Maximum grip is when car has about 6% of slipRatio. Make sure to make this in curve. Also slipRatio is in % (0-100) so either curve must be time -1 - 1 or -100 - 100 if slipRatio *= 100;
+        //Info source https://asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
+        if (linearVelocityLocal.z == 0)
         {
             slipRatio = 0;
         }
         else
         {
-            slipRatio = (wheelAngularVelocity * wheelRadius - forwardVelocuty) / Mathf.Abs(forwardVelocuty);
+            slipRatio = ((wheelAngularVelocity * wheelRadius) - linearVelocityLocal.z);
         }
+        var slipRatioNormalized = longSlipCurve.Evaluate(slipRatio/100f);
 
-        if (fZ != 0)
-        {
-            sX = lateralPacejkaCurve.Evaluate(slipRatio);
-        }
-        else
-        {
-            sX = 0; //Divide by zero fix
-        }
-        sX = Mathf.Clamp(sX, -1, 1);
+        sX = slipRatioNormalized;
+        Debug.Log("SX " +sX);
+        
     }
 
     private void GetSy()
     {
-         transientMax = Mathf.Sign(sidewaysVelocuty / -1);
-         transientCoeff = (Mathf.Abs(sidewaysVelocuty) / (relaxationLength / 100)) * deltaTime;
-         transientSY += (transientMax - transientSY) * transientCoeff;
-         transientSY = Mathf.Clamp(transientSY, -slopeGrade / 100, slopeGrade / 100);
-
-        if (forwardVelocuty != 0)
+        if (linearVelocityLocal.z != 0)
         {
-    
-                slipAngle = Mathf.Atan(-sidewaysVelocuty / Mathf.Abs(forwardVelocuty));
-            slipAngle *= 100f;
+            slipAngle = Mathf.Atan(linearVelocityLocal.x / linearVelocityLocal.z) * Mathf.Rad2Deg;
+        }
+        else
+        {
+            slipAngle = 0f;
+        }
+        var slipAngleNormalized = lateralSlipCurve.Evaluate(slipAngle);
+        sY = slipAngleNormalized *lateralFrictionCoefficient *-1;
+    }
 
+    private void GetFy()
+    {
+        var transientMax = Mathf.Sign(-linearVelocityLocal.x);
+        if (brakeTorque != 0 && rb.velocity.magnitude >= 0.25f)
+        {
+            transientCoeff = (Mathf.Abs(linearVelocityLocal.x) / (relaxationLength / 100)) * deltaTime;
+        }
+        else
+        {
+            transientCoeff = (Mathf.Abs(linearVelocityLocal.x) / ((relaxationLength * 10) / 100)) * deltaTime;
+        }
+        transientSY += (transientMax - transientSY) * transientCoeff;
+        transientSY = Mathf.Clamp(transientSY, -slopeGrade / 100, slopeGrade / 100);
 
+        if (linearVelocityLocal.z != 0)
+        {
+            slipAngle = Mathf.Atan(-linearVelocityLocal.x / Mathf.Abs(linearVelocityLocal.z)) * Mathf.Rad2Deg;
         }
         else
         {
             slipAngle = 0;
         }
-       //var lateralForce = sD * Mathf.Sin(1.3f * Mathf.Atan(sB * slipAngle - sE * (sB * slipAngle - Mathf.Atan(sB * slipAngle))));
-       // slipAngleNormalized = lateralForce;
-        slipAngleNormalized = lateralPacejkaCurve.Evaluate(slipAngle);
-        sY = slipAngleNormalized  ;
+        if (slipAngle > 0)
+        {
+            slipAngleNormalized = lateralSlipCurve.Evaluate(slipAngle);
+        }
+        else
+        {
+            slipAngleNormalized = lateralSlipCurve.Evaluate(-slipAngle) * -1;
+        }
 
-        
-
-
-        //sY = Mathf.Lerp(transientSY, slipAngleNormalized * 2f, MapRangeClamped(linearVelocityLocal.magnitude, slipAnglePeak, slipAnglePeak, 0, 1))  ;        //if (sidewaysVelocuty != 0)
-        //{
-        //    slipAngle = Mathf.Atan(-sidewaysVelocuty / Mathf.Abs(forwardVelocuty));
-        //}
-        //else
-        //{
-        //    slipAngle = 0; 
-        //}
-        //slideCoeff = (Mathf.Abs(sidewaysVelocuty) / (relaxationLength / 100)) * deltaTime;
-        //slideCoeff = Mathf.Clamp01(slideCoeff); 
-        //
-        //slipAngleDynamic += (Mathf.Lerp(Mathf.Sign(-sidewaysVelocuty) * (slipAnglePeak / 100), slipAngle, MapRangeClamped(linearVelocityLocal.magnitude, 3, 6, 0, 1)) - slipAngleDynamic) * slideCoeff;
-        //slipAngleDynamic = Mathf.Clamp(slipAngleDynamic, -slopeGrade / 100, slopeGrade / 100);
-        //
-        //sY = slipAngleDynamic / (slipAnglePeak / 100);
-        //sY = Mathf.Clamp(sY, -1, 1);
+        sY = Mathf.Lerp(transientSY, slipAngleNormalized, MapRangeClamped(linearVelocityLocal.magnitude, slipAnglePeak, slipAnglePeak + thresholdTurnoverRate, 0, 1));
+        Debug.Log(sY);
     }
 
     private float MapRangeClamped(float value, float inRangeA, float inRangeB, float outRangeA, float outRangeB)
@@ -258,6 +266,7 @@ public class NrcRayCastWheel : MonoBehaviour
 
     private void UpdateWheelMesh()
     {
+        
         var wheelangularVelDeg = (wheelAngularVelocity * Mathf.Rad2Deg) * deltaTime;
         wheelMesh.transform.Rotate(wheelangularVelDeg, 0, 0, Space.Self);
     }
@@ -267,42 +276,12 @@ public class NrcRayCastWheel : MonoBehaviour
         var forwardForceVectorNormalized = Vector3.ProjectOnPlane(transform.forward, hit.normal).normalized;
         var sideForceVectorNormalized = Vector3.ProjectOnPlane(transform.right, hit.normal).normalized;
         var fzMax = Mathf.Max(0, fZ);
-        fX = fzMax *sX;
-        var syFz = sY * fzMax*sideForceVectorNormalized;
-        var aboba = fzMax* sideForceVectorNormalized - syFz;
-       // if(wheelFL)
-       // Debug.Log((transform.right * fzMax) * sY);
-       
-
-        totalForce = sX*transform.forward;
-        totalForce -= transform.right * sY;
-
-
-
         //AdvancedFrictionForce
         Vector2 combinedForce = new Vector2(sX, sY);
-        //Vector3 combinedVector = combinedForce.x  +  combinedForce.y;
-        rb.AddForceAtPosition(combinedForce.normalized.x*forwardForceVectorNormalized* fzMax + combinedForce.normalized.y*fzMax*sideForceVectorNormalized, transform.position - (transform.up * currentLength));
-
-        Debug.Log(combinedForce);
-
-        //rb.AddForceAtPosition(totalForce*fZ , transform.position - transform.up * hit.distance);
-       // rb.AddForceAtPosition((this.transform.right*fzMax) * sY,  transform.position - transform.up * hit.distance);
-        //rb.AddForceAtPosition(combinedVector, transform.position - (transform.up * currentLength));
-       // rb.AddForceAtPosition(combinedVector, hit.point);
-
-        if (wheelFL || wheelFR)
-        {
-            //Debug.Log(slideCoeff);
-
-            //Debug.Log(slipAngleNormalized + "SlipAngle");
-        }
-       // Debug.Log(rb.mass/4*9.8f +"maxFrByMass");
-       // Debug.Log(fZ +"fZ");
-       //
-
-        //rb.AddForceAtPosition(longitudinalForce * forceZ * frictionCoefficientX * forwardForceVectorNormalized + lateralForce * forceZ * sideForceVectorNormalized, transform.position - (transform.up * currentLength));
-    }
+       // combindeFoceVectorNorm = (forwardForceVectorNormalized * sX + sideForceVectorNormalized * fzMax * sY);
+        rb.AddForceAtPosition(combinedForce.normalized.x* forwardForceVectorNormalized * fzMax + combinedForce.normalized.y * fzMax * sideForceVectorNormalized, transform.position - (transform.up * currentLength));
+        //Debug.Log(aboba);
+   }
 
 
 }

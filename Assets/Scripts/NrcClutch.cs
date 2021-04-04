@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,55 +34,18 @@ public class NrcClutch : MonoBehaviour
     // Update is called once per frame
     public void UpdatePhysics(float _outputShaftVelocity, float _engineAngularVelocity, float _gearboxRatio, float _clutchInput)
     {
-        clutchAngularVelocity = _outputShaftVelocity;
-        engineAngularVelocity = _engineAngularVelocity;
-        gearboxRatio = _gearboxRatio;
-        clutchInput = _clutchInput;
-
-        GetClutchTorque();
-
+        FrontPlate();
+        BackPlate();
     }
 
-    void GetClutchTorque()
+    private void BackPlate()
     {
-        if (gearboxRatio != 0)
-        {
-            clutchSlip = (engineAngularVelocity - clutchAngularVelocity) * Mathf.Sign(Mathf.Abs(gearboxRatio));
-        }
-        else
-        {
-            clutchSlip = 0;
-        }
+        
+    }
 
-        if (clutchType == ClutchType.Automatic)
-        {
-            if (gearboxRatio != 0)
-            {
-                clutchLock = MapRangeClamped(engineAngularVelocity * RadPS_To_RPM, 300, 700, 0, 1);
-            }
-            else
-            {
-                clutchLock = 0;
-            }
-        }
-
-        if (clutchType == ClutchType.Manual)
-        {
-            if (gearboxRatio != 0)
-            {
-                clutchLock = MapRangeClamped(clutchInput, 0, 1, 1, 0);
-            }
-            else
-            {
-                clutchLock = 0;
-            }
-        }
-
-        lastClutchTorque = (clutchSlip * clutchLock * clutchStiffness);
-        lastClutchTorque = Mathf.Clamp(lastClutchTorque, -clutchCapacity, clutchCapacity);
-
-        clutchTorque = lastClutchTorque + ((clutchTorque - lastClutchTorque) * clutchDamping);
-
+    private void FrontPlate()
+    {
+        throw new NotImplementedException();
     }
 
     float MapRangeClamped(float value, float inRangeA, float inRangeB, float outRangeA, float outRangeB)
